@@ -1,0 +1,13 @@
+{
+  "name": "pi-agent-config",
+  "version": "1.0.0",
+  "description": "Personal pi coding agent configuration — git-tracked with live symlinks",
+  "keywords": ["pi-package"],
+  "license": "MIT",
+  "pi": {
+    "extensions": ["./extensions"],
+    "skills": ["./skills"],
+    "prompts": [],
+    "themes": []
+  }
+}

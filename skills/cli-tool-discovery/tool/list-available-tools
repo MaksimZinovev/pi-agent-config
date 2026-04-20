@@ -1,0 +1,251 @@
+#!/bin/bash
+
+# List Available CLI Tools
+# Quick view of all available CLI tools with one-line descriptions
+
+set -euo pipefail
+
+# Colors
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Tool categories with descriptions
+declare -A DEV_TOOLS
+DEV_TOOLS["gh"]="GitHub CLI - Manage repos, issues, PRs"
+DEV_TOOLS["git"]="Version control for code"
+DEV_TOOLS["npm"]="Node.js package manager"
+DEV_TOOLS["yarn"]="Alternative Node.js package manager"
+DEV_TOOLS["pnpm"]="Fast, disk space efficient package manager"
+DEV_TOOLS["npx"]="Execute npm packages without installing"
+
+declare -A DATA_TOOLS
+DATA_TOOLS["jq"]="JSON processor and formatter"
+DATA_TOOLS["python"]="Python scripting language"
+DATA_TOOLS["node"]="Node.js JavaScript runtime"
+DATA_TOOLS["awk"]="Advanced text processing"
+DATA_TOOLS["sed"]="Stream text editor"
+DATA_TOOLS["grep"]="Search text patterns"
+DATA_TOOLS["sort"]="Sort lines of text"
+DATA_TOOLS["uniq"]="Remove duplicate lines"
+
+declare -A NETWORK_TOOLS
+NETWORK_TOOLS["curl"]="Transfer data with URLs"
+NETWORK_TOOLS["wget"]="Download files from web"
+NETWORK_TOOLS["ping"]="Test network connectivity"
+NETWORK_TOOLS["netstat"]="Network statistics"
+NETWORK_TOOLS["ss"]="Socket statistics"
+NETWORK_TOOLS["traceroute"]="Trace network path"
+NETWORK_TOOLS["ssh"]="Secure remote connection"
+NETWORK_TOOLS["nc"]="Netcat - network swiss army knife"
+
+declare -A SYSTEM_TOOLS
+SYSTEM_TOOLS["ps"]="List running processes"
+SYSTEM_TOOLS["top"]="Interactive process viewer"
+SYSTEM_TOOLS["htop"]="Improved process viewer"
+SYSTEM_TOOLS["lsof"]="List open files"
+SYSTEM_TOOLS["find"]="Find files and directories"
+SYSTEM_TOOLS["locate"]="Find files by name"
+SYSTEM_TOOLS["which"]="Locate command in PATH"
+SYSTEM_TOOLS["whereis"]="Find binary, source, man pages"
+
+declare -A ARCHIVE_TOOLS
+ARCHIVE_TOOLS["tar"]="Create/extract archives"
+ARCHIVE_TOOLS["zip"]="Create ZIP archives"
+ARCHIVE_TOOLS["unzip"]="Extract ZIP archives"
+ARCHIVE_TOOLS["gzip"]="Compress files"
+ARCHIVE_TOOLS["gunzip"]="Decompress files"
+ARCHIVE_TOOLS["rsync"]="Efficient file sync"
+
+declare -A CONTAINER_TOOLS
+CONTAINER_TOOLS["docker"]="Container platform"
+CONTAINER_TOOLS["docker-compose"]="Multi-container apps"
+CONTAINER_TOOLS["podman"]="Daemonless containers"
+CONTAINER_TOOLS["kubectl"]="Kubernetes CLI"
+CONTAINER_TOOLS["helm"]="Kubernetes package manager"
+
+declare -A CLOUD_TOOLS
+CLOUD_TOOLS["aws"]="Amazon Web Services CLI"
+CLOUD_TOOLS["gcloud"]="Google Cloud CLI"
+CLOUD_TOOLS["az"]="Azure CLI"
+CLOUD_TOOLS["terraform"]="Infrastructure as code"
+CLOUD_TOOLS["ansible"]="Configuration management"
+
+declare -A DOCUMENTATION_TOOLS
+DOCUMENTATION_TOOLS["man"]="Manual pages"
+DOCUMENTATION_TOOLS["tldr"]="Simplified man pages"
+DOCUMENTATION_TOOLS["info"]="Info documentation"
+DOCUMENTATION_TOOLS["context7-cli"]="Up-to-date library docs"
+
+# Check if tool is available
+is_tool_available() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Display tools by category
+display_category() {
+    local category_name="$1"
+    local -n tools_ref="$2"
+
+    echo -e "\n${CYAN}=== $category_name ===${NC}"
+
+    local count=0
+    for tool in "${!tools_ref[@]}"; do
+        if is_tool_available "$tool"; then
+            echo -e "  ${BLUE}•${NC} ${tool:<12} ${tools_ref[$tool]}"
+            ((count++))
+        fi
+    done
+
+    if [ $count -eq 0 ]; then
+        echo -e "  ${YELLOW}No tools from this category found${NC}"
+    fi
+}
+
+# Show help
+show_help() {
+    cat << EOF
+${CYAN}List Available CLI Tools${NC}
+
+${YELLOW}USAGE:${NC}
+    $0 [options]
+
+${YELLOW}OPTIONS:${NC}
+    -c, --category <cat>   Show specific category only
+    -j, --json             Output as JSON
+    -f, --format <fmt>     Output format: table, list, json
+    -h, --help             Show this help
+
+${YELLOW}CATEGORIES:${NC}
+    dev        Development tools
+    data       Data processing tools
+    network    Network tools
+    system     System tools
+    archive    Archive tools
+    container  Container tools
+    cloud      Cloud tools
+    docs       Documentation tools
+
+EOF
+}
+
+# Main execution
+main() {
+    local format="table"
+    local category=""
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -c|--category)
+                category="$2"
+                shift 2
+                ;;
+            -j|--json)
+                format="json"
+                shift
+                ;;
+            -f|--format)
+                format="$2"
+                shift 2
+                ;;
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: $1" >&2
+                show_help
+                exit 1
+                ;;
+        esac
+    done
+
+    # Header
+    echo -e "${GREEN}Available CLI Tools${NC}"
+
+    if [[ "$format" == "json" ]]; then
+        echo "{"
+        echo "  \"available_tools\": {"
+        local first=true
+
+        for tool in gh git npm yarn pnpm npx jq python node awk sed grep sort uniq curl wget ping netstat ss traceroute ssh nc ps top htop lsof find locate which whereis tar zip unzip gzip gunzip rsync docker docker-compose podman kubectl helm aws gcloud az terraform ansible man tldr info context7-cli; do
+            if is_tool_available "$tool"; then
+                if [ "$first" = true ]; then
+                    first=false
+                else
+                    echo ","
+                fi
+                echo -n "    \"$tool\": \"$(which "$tool")\""
+            fi
+        done
+
+        echo ""
+        echo "  }"
+        echo "}"
+    elif [[ "$format" == "list" ]]; then
+        for tool in gh git npm yarn pnpm npx jq python node awk sed grep sort uniq curl wget ping netstat ss traceroute ssh nc ps top htop lsof find locate which whereis tar zip unzip gzip gunzip rsync docker docker-compose podman kubectl helm aws gcloud az terraform ansible man tldr info context7-cli; do
+            if is_tool_available "$tool"; then
+                echo "$tool"
+            fi
+        done
+    else
+        # Table format (default)
+        if [[ -n "$category" ]]; then
+            case "$category" in
+                dev|development)
+                    display_category "Development Tools" DEV_TOOLS
+                    ;;
+                data)
+                    display_category "Data Processing" DATA_TOOLS
+                    ;;
+                network|net)
+                    display_category "Network Tools" NETWORK_TOOLS
+                    ;;
+                system|sys)
+                    display_category "System Tools" SYSTEM_TOOLS
+                    ;;
+                archive|arc)
+                    display_category "Archive Tools" ARCHIVE_TOOLS
+                    ;;
+                container|cont)
+                    display_category "Container Tools" CONTAINER_TOOLS
+                    ;;
+                cloud)
+                    display_category "Cloud Tools" CLOUD_TOOLS
+                    ;;
+                docs|documentation)
+                    display_category "Documentation Tools" DOCUMENTATION_TOOLS
+                    ;;
+                *)
+                    echo -e "${RED}Unknown category: $category${NC}" >&2
+                    echo -e "${YELLOW}Available categories: dev, data, network, system, archive, container, cloud, docs${NC}" >&2
+                    exit 1
+                    ;;
+            esac
+        else
+            # Show all categories
+            display_category "Development Tools" DEV_TOOLS
+            display_category "Data Processing" DATA_TOOLS
+            display_category "Network Tools" NETWORK_TOOLS
+            display_category "System Tools" SYSTEM_TOOLS
+            display_category "Archive Tools" ARCHIVE_TOOLS
+            display_category "Container Tools" CONTAINER_TOOLS
+            display_category "Cloud Tools" CLOUD_TOOLS
+            display_category "Documentation Tools" DOCUMENTATION_TOOLS
+
+            echo -e "\n${CYAN}=== Summary ===${NC}"
+            local total=0
+            for tool in gh git npm yarn pnpm npx jq python node awk sed grep sort uniq curl wget ping netstat ss traceroute ssh nc ps top htop lsof find locate which whereis tar zip unzip gzip gunzip rsync docker docker-compose podman kubectl helm aws gcloud az terraform ansible man tldr info context7-cli; do
+                if is_tool_available "$tool"; then
+                    ((total++))
+                fi
+            done
+            echo -e "${GREEN}Total available tools: $total${NC}"
+        fi
+    fi
+}
+
+main "$@"

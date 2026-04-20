@@ -1,0 +1,85 @@
+{
+  "compaction": {
+    "aggressive": true,
+    "keepRecentTokens": 12000,
+    "reserveTokens": 8000
+  },
+  "theme": "matte-black",
+  "defaultModel": "glm-5.1:cloud",
+  "defaultProvider": "ollama",
+  "defaultThinkingLevel": "medium",
+  "disabledExtensions": [
+    "npm:taskplane",
+    "npm:pi-powerline-footer"
+  ],
+  "enabledModels": [
+    "ollama/glm-5.1:cloud",
+    "ollama/gemini-3-flash-preview:cloud",
+    "ollama/minimax-m2.7:cloud",
+    "ollama/kimi-k2.5:cloud"
+  ],
+  "extensions": [
+    "/Users/maksim/.pi/agent/extensions/prune-large-toolresults.ts",
+    "/Users/maksim/.pi/agent/extensions/answer.ts",
+    "/Users/maksim/.pi/agent/extensions/files.ts",
+    "/Users/maksim/.pi/agent/extensions/cx-first-reminder.ts"
+  ],
+  "hideThinkingBlock": false,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "printf '%s' '⚠️ [DEEPWIKI WORKFLOW] Before deepwiki_ask_question: 1) deepwiki_read_wiki_structure first (verifies indexing) 2) deepwiki_read_wiki_contents for docs 3) Fallback: gh api if repo unindexed.'",
+            "if": "mcp(*deepwiki*)",
+            "type": "command"
+          },
+          {
+            "command": "printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"[DEEPWIKI WORKFLOW] If deepwiki_ask_question fails: 1) Verify repo is indexed via deepwiki_read_wiki_structure 2) Use deepwiki_read_wiki_contents for docs 3) Fallback to gh api (gh repo view / gh api repos/owner/repo/contents) for unindexed repos.\"}}'",
+            "if": "mcp(*deepwiki*)",
+            "type": "command"
+          }
+        ],
+        "matcher": "mcp"
+      }
+    ]
+  },
+  "lastChangelogVersion": "0.65.0",
+  "packages": [
+    "npm:pi-subagents",
+    "npm:pi-lens",
+    "npm:@lnittman/pi-interview",
+    "npm:pi-mcp-adapter",
+    "npm:pi-interview",
+    "npm:pi-tool-display",
+    "npm:pi-rtk-optimizer",
+    "npm:pi-permission-system",
+    "npm:@hsingjui/pi-hooks",
+    "npm:pi-teams",
+    "npm:@ollama/pi-web-search",
+    "npm:pi-prompt-template-model",
+    "npm:pi-boomerang",
+    "npm:pi-rewind-hook",
+    "npm:pi-review-loop",
+    "npm:pi-side-chat",
+    "npm:pi-models",
+    "npm:pi-promptsmith",
+    "npm:@danchamorro/pi-prompt-enhancer",
+    "npm:pi-design-deck",
+    "npm:pi-fancy-footer",
+    "npm:pi-studio",
+    "git:github.com/victor-software-house/pi-curated-themes",
+    "npm:pi-annotate"
+  ],
+  "steeringMode": "one-at-a-time",
+  "subagents": {
+    "agentOverrides": {
+      "context-builder": {
+        "model": "ollama/gemini-3-flash-preview:cloud"
+      },
+      "planner": {
+        "model": "ollama/glm-5.1:cloud"
+      }
+    }
+  }
+}

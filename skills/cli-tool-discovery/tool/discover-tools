@@ -1,0 +1,289 @@
+#!/bin/bash
+
+# CLI Tool Discovery Script
+# Helps find the right CLI tool for specific tasks or error scenarios
+
+set -euo pipefail
+
+# Color definitions
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Tool registry - common CLI tools with descriptions and use cases
+declare -A TOOL_REGISTRY
+TOOL_REGISTRY["gh"]="GitHub CLI - Manage GitHub repositories, issues, PRs, and workflows from command line"
+TOOL_REGISTRY["context7-cli"]="Context7 CLI - Fetch up-to-date documentation for any library or framework"
+TOOL_REGISTRY["npm"]="Node Package Manager - Install, manage, and run Node.js packages and scripts"
+TOOL_REGISTRY["jq"]="JSON Processor - Parse, filter, and transform JSON data"
+TOOL_REGISTRY["curl"]="Data Transfer Tool - Transfer data with URLs, test APIs, download files"
+TOOL_REGISTRY["git"]="Version Control System - Track changes, collaborate, and manage code history"
+TOOL_REGISTRY["docker"]="Container Platform - Build, ship, and run containerized applications"
+TOOL_REGISTRY["kubectl"]="Kubernetes CLI - Manage Kubernetes clusters and applications"
+TOOL_REGISTRY["aws"]="AWS CLI - Interact with Amazon Web Services from command line"
+TOOL_REGISTRY["terraform"]="Infrastructure as Code - Build, change, and version infrastructure safely"
+TOOL_REGISTRY["grep"]="Text Search - Find patterns in text files and streams"
+TOOL_REGISTRY["find"]="File Search - Search for files and directories"
+TOOL_REGISTRY["sed"]="Stream Editor - Transform text in files and streams"
+TOOL_REGISTRY["awk"]="Text Processing - Advanced text processing and data extraction"
+TOOL_REGISTRY["ps"]="Process Status - List and manage running processes"
+TOOL_REGISTRY["lsof"]="List Open Files - Show which files are open by which processes"
+TOOL_REGISTRY["netstat"]="Network Statistics - Display network connections and statistics"
+TOOL_REGISTRY["ping"]="Network Test - Test network connectivity to hosts"
+TOOL_REGISTRY["ssh"]="Secure Shell - Connect to remote machines securely"
+TOOL_REGISTRY["rsync"]="File Synchronization - Efficiently sync files and directories"
+TOOL_REGISTRY["tar"]="Archive Utility - Create and extract compressed archives"
+
+# Error pattern matching
+declare -A ERROR_PATTERNS
+ERROR_PATTERNS["permission denied"]="sudo, chmod, chown, lsof, fuser"
+ERROR_PATTERNS["network"]="curl, wget, ping, netstat, ssh, nc"
+ERROR_PATTERNS["json"]="jq, python -m json.tool, node"
+ERROR_PATTERNS["git"]="git, gh, git-lfs"
+ERROR_PATTERNS["npm"]="npm, yarn, pnpm, npx"
+ERROR_PATTERNS["docker"]="docker, docker-compose, podman"
+ERROR_PATTERNS["kubernetes"]="kubectl, helm, kubens, kubectx"
+ERROR_PATTERNS["aws"]="aws, awsls, aws-shell"
+ERROR_PATTERNS["file not found"]="find, locate, which, whereis"
+ERROR_PATTERNS["port already in use"]="lsof, netstat, ss, fuser"
+ERROR_PATTERNS["module not found"]="npm, yarn, pip, python -m, pip3"
+ERROR_PATTERNS["command not found"]="which, whereis, brew, apt, yum"
+ERROR_PATTERNS["authentication"]="ssh, gh, aws configure, kubectl config"
+
+# Task pattern matching
+declare -A TASK_PATTERNS
+TASK_PATTERNS["debug"]="lsof, strace, gdb, dmesg, journalctl, ps, top, htop"
+TASK_PATTERNS["documentation"]="man, --help, info, tldr, context7-cli, gh"
+TASK_PATTERNS["testing"]="npm test, jest, pytest, go test, cargo test"
+TASK_PATTERNS["building"]="make, npm run build, cargo build, go build, webpack"
+TASK_PATTERNS["deployment"]="docker, kubectl, terraform, ansible, gh"
+TASK_PATTERNS["monitoring"]="ps, top, htop, iostat, vmstat, sar, glances"
+TASK_PATTERNS["networking"]="ping, traceroute, netstat, ss, nmap, nc, curl"
+TASK_PATTERNS["file management"]="find, grep, sed, awk, sort, uniq, cut, xargs"
+TASK_PATTERNS["version control"]="git, gh, git-lfs, git-remote-code"
+
+# Function to check if a tool is available
+is_tool_available() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Function to get tool help text
+get_tool_help() {
+    local tool="$1"
+    if is_tool_available "$tool"; then
+        if command -v "$tool" --help >/dev/null 2>&1; then
+            "$tool" --help 2>&1 | head -10
+        elif command -v "$tool" -h >/dev/null 2>&1; then
+            "$tool" -h 2>&1 | head -10
+        else
+            echo "No help available for $tool"
+        fi
+    else
+        echo "Tool $tool is not available"
+    fi
+}
+
+# Function to search tools by pattern
+search_tools_by_pattern() {
+    local pattern="$1"
+    local found_tools=()
+
+    # Search in task patterns
+    for task in "${!TASK_PATTERNS[@]}"; do
+        if [[ "$task" == *"$pattern"* ]]; then
+            IFS=', ' read -ra tools <<< "${TASK_PATTERNS[$task]}"
+            found_tools+=("${tools[@]}")
+        fi
+    done
+
+    # Search in error patterns
+    for error in "${!ERROR_PATTERNS[@]}"; do
+        if [[ "$error" == *"$pattern"* ]]; then
+            IFS=', ' read -ra tools <<< "${ERROR_PATTERNS[$error]}"
+            found_tools+=("${tools[@]}")
+        fi
+    done
+
+    # Remove duplicates and filter available tools
+    local available_tools=()
+    for tool in "${found_tools[@]}"; do
+        if [[ ! " ${available_tools[*]} " =~ " ${tool} " ]] && is_tool_available "$tool"; then
+            available_tools+=("$tool")
+        fi
+    done
+
+    printf '%s\n' "${available_tools[@]}"
+}
+
+# Function to suggest tools based on error message
+suggest_tools_for_error() {
+    local error_msg="$1"
+    echo -e "${YELLOW}Analyzing error message and suggesting tools...${NC}"
+
+    local suggestions=()
+
+    # Check error patterns
+    for pattern in "${!ERROR_PATTERNS[@]}"; do
+        if [[ "${error_msg,,}" == *"${pattern}"* ]]; then
+            IFS=', ' read -ra tools <<< "${ERROR_PATTERNS[$pattern]}"
+            for tool in "${tools[@]}"; do
+                if is_tool_available "$tool"; then
+                    suggestions+=("$tool")
+                fi
+            done
+        fi
+    done
+
+    if [ ${#suggestions[@]} -eq 0 ]; then
+        echo -e "${RED}No specific tools found for this error.${NC}"
+        echo -e "${CYAN}Try searching for tools by task or check all available tools.${NC}"
+        return
+    fi
+
+    echo -e "${GREEN}Suggested tools for this error:${NC}"
+    for tool in "${suggestions[@]}"; do
+        echo -e "  ${BLUE}•${NC} ${tool}: ${TOOL_REGISTRY[$tool]:-No description available}"
+    done
+}
+
+# Function to list all available tools
+list_available_tools() {
+    echo -e "${CYAN}Scanning for available CLI tools...${NC}"
+
+    local available_tools=()
+    for tool in "${!TOOL_REGISTRY[@]}"; do
+        if is_tool_available "$tool"; then
+            available_tools+=("$tool")
+        fi
+    done
+
+    if [ ${#available_tools[@]} -eq 0 ]; then
+        echo -e "${RED}No known tools found on this system.${NC}"
+        return
+    fi
+
+    echo -e "${GREEN}Available CLI tools:${NC}"
+    for tool in "${available_tools[@]}"; do
+        echo -e "  ${BLUE}•${NC} ${tool}"
+        echo -e "    ${TOOL_REGISTRY[$tool]}"
+    done
+}
+
+# Function to show detailed information about a tool
+show_tool_info() {
+    local tool="$1"
+
+    if ! is_tool_available "$tool"; then
+        echo -e "${RED}Tool '$tool' is not available on this system.${NC}"
+        return
+    fi
+
+    echo -e "${CYAN}Tool Information: $tool${NC}"
+    echo -e "${GREEN}Description:${NC} ${TOOL_REGISTRY[$tool]:-No description available}"
+    echo -e "${GREEN}Location:${NC} $(which "$tool")"
+    echo -e "${GREEN}Version:${NC}"
+
+    # Try to get version information
+    if "$tool" --version >/dev/null 2>&1; then
+        "$tool" --version 2>/dev/null || echo "Unable to get version"
+    elif "$tool" version >/dev/null 2>&1; then
+        "$tool" version 2>/dev/null || echo "Unable to get version"
+    else
+        echo "Unable to get version"
+    fi
+
+    echo -e "${GREEN}Quick Help:${NC}"
+    get_tool_help "$tool" | head -5
+}
+
+# Function to show interactive help
+show_help() {
+    cat << EOF
+${CYAN}CLI Tool Discovery - Help Claude find the right tool for the job${NC}
+
+${YELLOW}USAGE:${NC}
+    $0 [options] [query]
+
+${YELLOW}OPTIONS:${NC}
+    -e, --error <message>    Suggest tools based on error message
+    -t, --task <task>        Find tools for specific task
+    -l, --list               List all available tools
+    -i, --info <tool>        Show detailed information about a tool
+    -h, --help               Show this help message
+
+${YELLOW}EXAMPLES:${NC}
+    $0 --error "permission denied"          # Find tools for permission errors
+    $0 --task "debug"                       # Find debugging tools
+    $0 --list                               # Show all available tools
+    $0 --info gh                            # Get detailed info about GitHub CLI
+    $0 "network troubleshooting"            # General search for tools
+
+${YELLOW}COMMON TASKS:${NC}
+    debug, documentation, testing, building, deployment
+    monitoring, networking, file management, version control
+
+${YELLOW}COMMON ERRORS:${NC}
+    permission denied, network, json, git, npm, docker
+    kubernetes, aws, file not found, port already in use
+
+EOF
+}
+
+# Main execution
+main() {
+    case "${1:-}" in
+        -h|--help|"")
+            show_help
+            ;;
+        -e|--error)
+            if [ -z "${2:-}" ]; then
+                echo -e "${RED}Error: --error requires an error message${NC}" >&2
+                exit 1
+            fi
+            suggest_tools_for_error "$2"
+            ;;
+        -t|--task)
+            if [ -z "${2:-}" ]; then
+                echo -e "${RED}Error: --task requires a task description${NC}" >&2
+                exit 1
+            fi
+            echo -e "${YELLOW}Searching for tools related to: $2${NC}"
+            local tools=($(search_tools_by_pattern "$2"))
+            if [ ${#tools[@]} -eq 0 ]; then
+                echo -e "${RED}No tools found for '$2'${NC}"
+            else
+                for tool in "${tools[@]}"; do
+                    echo -e "  ${BLUE}•${NC} ${tool}: ${TOOL_REGISTRY[$tool]:-No description available}"
+                done
+            fi
+            ;;
+        -l|--list)
+            list_available_tools
+            ;;
+        -i|--info)
+            if [ -z "${2:-}" ]; then
+                echo -e "${RED}Error: --info requires a tool name${NC}" >&2
+                exit 1
+            fi
+            show_tool_info "$2"
+            ;;
+        *)
+            # General search
+            echo -e "${YELLOW}Searching for tools related to: $1${NC}"
+            local tools=($(search_tools_by_pattern "$1"))
+            if [ ${#tools[@]} -eq 0 ]; then
+                echo -e "${RED}No tools found for '$1'${NC}"
+                echo -e "${CYAN}Try: $0 --list to see all available tools${NC}"
+            else
+                for tool in "${tools[@]}"; do
+                    echo -e "  ${BLUE}•${NC} ${tool}: ${TOOL_REGISTRY[$tool]:-No description available}"
+                done
+            fi
+            ;;
+    esac
+}
+
+main "$@"

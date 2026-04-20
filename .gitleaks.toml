@@ -1,0 +1,8 @@
+title = "pi-agent-config gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignore example secrets in specstory-guard skill documentation"
+paths = ['''skills/specstory-guard/SKILL\.md$''']

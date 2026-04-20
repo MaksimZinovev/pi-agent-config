@@ -1,0 +1,34 @@
+{
+  "refreshMs": 5000,
+  "iconFamily": "nerd",
+  "contextBarStyle": "blocks",
+  "defaultTextColor": "dim",
+  "defaultIconColor": "dim",
+  "widgets": {
+    "model": {
+      "enabled": true,
+      "textColor": "accent",
+      "row": 2,
+      "align": "right",
+      "iconColor": "accent",
+      "position": 1
+    },
+    "context-usage": {
+      "textColor": "text",
+      "iconColor": "text"
+    },
+    "total-cost": {
+      "enabled": false,
+      "position": 8
+    },
+    "diff-added": {
+      "enabled": true,
+      "iconColor": "warning",
+      "textColor": "warning"
+    },
+    "git-status": {
+      "iconColor": "warning",
+      "textColor": "warning"
+    }
+  }
+}

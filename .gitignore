@@ -88,11 +88,24 @@ out/
 *.p12
 *.jks
 
+# === Secrets / Pi-specific ===
+auth.json
+sessions/
+mcp-cache.json
+mcp-npx-cache.json
+run-history.jsonl
+
 # === Misc ===
 .pi-lens/
+.specstory/
+.local/
 *.bak
 *.tmp
 *.temp
 .cache/
-.specstory
-.local
+
+# === Node (skills/extensions may have deps) ===
+**/node_modules/
+
+# === Python venvs (skills may bundle references) ===
+**/.venv/

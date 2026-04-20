@@ -1,0 +1,345 @@
+#!/bin/bash
+
+# Hook Installation Script for CLI Tool Discovery
+# Installs Claude Code hooks for automatic tool discovery initialization
+
+set -euo pipefail
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+
+# Hook file path
+HOOK_SCRIPT="$SCRIPT_DIR/hooks/session-start.sh"
+HOOK_CONFIG_NAME="cli-tool-discovery-hook"
+
+# Function to display messages
+display_message() {
+    local color="$1"
+    local message="$2"
+    echo -e "${color}🔧 CLI Tool Discovery: $message${NC}"
+}
+
+# Function to check prerequisites
+check_prerequisites() {
+    display_message "$BLUE" "Checking prerequisites..."
+
+    # Check if hook script exists and is executable
+    if [ ! -x "$HOOK_SCRIPT" ]; then
+        display_message "$RED" "Hook script not found or not executable: $HOOK_SCRIPT"
+        return 1
+    fi
+
+    # Check if we're in a git repository
+    if ! git rev-parse --git-dir >/dev/null 2>&1; then
+        display_message "$YELLOW" "Not in a git repository. Installing user-level hooks."
+        return 2
+    fi
+
+    display_message "$GREEN" "Prerequisites check passed"
+    return 0
+}
+
+# Function to backup existing hooks
+backup_existing_hooks() {
+    local settings_file="$1"
+    local backup_file="${settings_file}.backup.$(date +%Y%m%d_%H%M%S)"
+
+    if [ -f "$settings_file" ]; then
+        cp "$settings_file" "$backup_file"
+        display_message "$YELLOW" "Existing settings backed up to: $backup_file"
+    fi
+}
+
+# Function to create directory structure
+create_directories() {
+    local claude_dir="$1"
+
+    # Create .claude directory if it doesn't exist
+    if [ ! -d "$claude_dir" ]; then
+        mkdir -p "$claude_dir"
+        display_message "$BLUE" "Created Claude directory: $claude_dir"
+    fi
+}
+
+# Function to install project-level hooks
+install_project_hooks() {
+    local settings_file="$PROJECT_ROOT/.claude/settings.local.json"
+    local hook_command="$HOOK_SCRIPT"
+
+    display_message "$BLUE" "Installing project-level hooks..."
+
+    # Backup existing settings
+    backup_existing_hooks "$settings_file"
+
+    # Create or update settings file
+    if [ ! -f "$settings_file" ]; then
+        # Create new settings file
+        cat > "$settings_file" << EOF
+{
+  "hooks": {
+    "SessionStart": {
+      "command": "$hook_command",
+      "description": "Initialize CLI tool discovery registry"
+    }
+  }
+}
+EOF
+        display_message "$GREEN" "Created new Claude settings with hooks"
+    else
+        # Update existing settings file
+        local temp_file=$(mktemp)
+
+        # Use jq to merge hooks if jq is available
+        if command -v jq >/dev/null 2>&1; then
+            jq --arg cmd "$hook_command" '.hooks.SessionStart = {"command": $cmd, "description": "Initialize CLI tool discovery registry"}' "$settings_file" > "$temp_file"
+            mv "$temp_file" "$settings_file"
+            display_message "$GREEN" "Updated existing Claude settings with hooks"
+        else
+            # Fallback: simple append (not ideal but works)
+            display_message "$YELLOW" "jq not available, using fallback method"
+            echo "Warning: Please manually add the hook to your settings.local.json" >&2
+        fi
+    fi
+
+    display_message "$GREEN" "Project-level hooks installed successfully"
+}
+
+# Function to install user-level hooks
+install_user_hooks() {
+    local user_settings="$HOME/.claude/settings.local.json"
+    local hook_command="$HOOK_SCRIPT"
+
+    display_message "$BLUE" "Installing user-level hooks..."
+
+    # Backup existing settings
+    backup_existing_hooks "$user_settings"
+
+    # Create user .claude directory
+    create_directories "$HOME/.claude"
+
+    # Create or update user settings file
+    if [ ! -f "$user_settings" ]; then
+        # Create new user settings file
+        cat > "$user_settings" << EOF
+{
+  "hooks": {
+    "SessionStart": {
+      "command": "$hook_command",
+      "description": "Initialize CLI tool discovery registry"
+    }
+  }
+}
+EOF
+        display_message "$GREEN" "Created new user Claude settings with hooks"
+    else
+        # Update existing user settings file
+        local temp_file=$(mktemp)
+
+        if command -v jq >/dev/null 2>&1; then
+            jq --arg cmd "$hook_command" '.hooks.SessionStart = {"command": $cmd, "description": "Initialize CLI tool discovery registry"}' "$user_settings" > "$temp_file"
+            mv "$temp_file" "$user_settings"
+            display_message "$GREEN" "Updated existing user Claude settings with hooks"
+        else
+            display_message "$YELLOW" "jq not available, please manually update user settings"
+        fi
+    fi
+
+    display_message "$GREEN" "User-level hooks installed successfully"
+}
+
+# Function to test hook installation
+test_hook_installation() {
+    display_message "$BLUE" "Testing hook installation..."
+
+    # Test if hook script is executable
+    if "$HOOK_SCRIPT" --test >/dev/null 2>&1; then
+        display_message "$GREEN" "Hook script test passed"
+    else
+        display_message "$YELLOW" "Hook script test failed, but installation may still work"
+    fi
+
+    # Test if settings file is valid JSON
+    local settings_file="$PROJECT_ROOT/.claude/settings.local.json"
+    if [ -f "$settings_file" ]; then
+        if command -v jq >/dev/null 2>&1 && jq empty "$settings_file" 2>/dev/null; then
+            display_message "$GREEN" "Settings file is valid JSON"
+        else
+            display_message "$YELLOW" "Settings file may have JSON issues"
+        fi
+    fi
+}
+
+# Function to show usage
+show_usage() {
+    cat << EOF
+${CYAN}CLI Tool Discovery Hook Installation${NC}
+
+${YELLOW}USAGE:${NC}
+    $0 [options]
+
+${YELLOW}OPTIONS:${NC}
+    -f, --force         Force reinstall (overwrite existing hooks)
+    -u, --user          Install user-level hooks instead of project-level
+    -r, --remove        Remove existing hooks
+    -t, --test          Test current hook installation
+    -h, --help          Show this help message
+
+${YELLOW}EXAMPLES:${NC}
+    $0                  # Install project-level hooks
+    $0 --user           # Install user-level hooks
+    $0 --force          # Force reinstall project hooks
+    $0 --remove         # Remove hooks
+    $0 --test           # Test hook installation
+
+EOF
+}
+
+# Function to remove hooks
+remove_hooks() {
+    display_message "$BLUE" "Removing CLI tool discovery hooks..."
+
+    local settings_file="$PROJECT_ROOT/.claude/settings.local.json"
+    local user_settings="$HOME/.claude/settings.local.json"
+
+    # Remove from project settings
+    if [ -f "$settings_file" ]; then
+        backup_existing_hooks "$settings_file"
+        if command -v jq >/dev/null 2>&1; then
+            jq 'del(.hooks.SessionStart)' "$settings_file" > "${settings_file}.tmp" && mv "${settings_file}.tmp" "$settings_file"
+            display_message "$GREEN" "Removed hooks from project settings"
+        fi
+    fi
+
+    # Remove from user settings
+    if [ -f "$user_settings" ]; then
+        backup_existing_hooks "$user_settings"
+        if command -v jq >/dev/null 2>&1; then
+            jq 'del(.hooks.SessionStart)' "$user_settings" > "${user_settings}.tmp" && mv "${user_settings}.tmp" "$user_settings"
+            display_message "$GREEN" "Removed hooks from user settings"
+        fi
+    fi
+
+    display_message "$GREEN" "Hooks removed successfully"
+}
+
+# Function to test current installation
+test_current_installation() {
+    display_message "$BLUE" "Testing current hook installation..."
+
+    local project_settings="$PROJECT_ROOT/.claude/settings.local.json"
+    local user_settings="$HOME/.claude/settings.local.json"
+
+    # Check project settings
+    if [ -f "$project_settings" ]; then
+        if grep -q "session-start.sh" "$project_settings" 2>/dev/null; then
+            display_message "$GREEN" "Project-level hooks found and configured"
+        else
+            display_message "$YELLOW" "Project settings exist but no CLI tool discovery hooks found"
+        fi
+    else
+        display_message "$YELLOW" "No project-level settings found"
+    fi
+
+    # Check user settings
+    if [ -f "$user_settings" ]; then
+        if grep -q "session-start.sh" "$user_settings" 2>/dev/null; then
+            display_message "$GREEN" "User-level hooks found and configured"
+        else
+            display_message "$YELLOW" "User settings exist but no CLI tool discovery hooks found"
+        fi
+    else
+        display_message "$YELLOW" "No user-level settings found"
+    fi
+
+    # Check hook script
+    if [ -x "$HOOK_SCRIPT" ]; then
+        display_message "$GREEN" "Hook script exists and is executable"
+    else
+        display_message "$RED" "Hook script missing or not executable"
+    fi
+}
+
+# Main installation logic
+main() {
+    local force_reinstall=false
+    local user_level=false
+    local remove_hooks=false
+    local test_only=false
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -f|--force)
+                force_reinstall=true
+                shift
+                ;;
+            -u|--user)
+                user_level=true
+                shift
+                ;;
+            -r|--remove)
+                remove_hooks=true
+                shift
+                ;;
+            -t|--test)
+                test_only=true
+                shift
+                ;;
+            -h|--help)
+                show_usage
+                exit 0
+                ;;
+            *)
+                display_message "$RED" "Unknown option: $1"
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
+
+    # Handle different modes
+    if [ "$remove_hooks" = true ]; then
+        remove_hooks
+        exit 0
+    fi
+
+    if [ "$test_only" = true ]; then
+        test_current_installation
+        exit 0
+    fi
+
+    display_message "$CYAN" "CLI Tool Discovery Hook Installation"
+
+    # Check prerequisites
+    local prereq_result
+    check_prerequisites
+    prereq_result=$?
+
+    # Install hooks based on prerequisite check and user preference
+    if [ "$user_level" = true ] || [ $prereq_result -eq 2 ]; then
+        install_user_hooks
+    elif [ $prereq_result -eq 0 ]; then
+        install_project_hooks
+    else
+        display_message "$RED" "Prerequisites check failed"
+        exit 1
+    fi
+
+    # Test installation
+    test_hook_installation
+
+    display_message "$GREEN" "Hook installation completed successfully!"
+    display_message "$BLUE" "Hooks will be activated on next Claude Code session start."
+}
+
+# Run main function
+main "$@"

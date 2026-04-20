@@ -1,0 +1,413 @@
+#!/bin/bash
+
+# Tool Information Script
+# Get detailed information about specific CLI tools including usage examples
+
+set -euo pipefail
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+NC='\033[0m' # No Color
+
+# Tool information database
+declare -A TOOL_DESCRIPTIONS
+TOOL_DESCRIPTIONS["gh"]="GitHub CLI - Official command-line tool for GitHub repositories, issues, pull requests, and workflows"
+TOOL_DESCRIPTIONS["git"]="Version Control System - Distributed version control for tracking changes in source code"
+TOOL_DESCRIPTIONS["npm"]="Node Package Manager - Package manager for Node.js JavaScript runtime"
+TOOL_DESCRIPTIONS["yarn"]="Package Manager - Fast, reliable, and secure dependency management for JavaScript"
+TOOL_DESCRIPTIONS["pnpm"]="Package Manager - Fast, disk space efficient package manager"
+TOOL_DESCRIPTIONS["npx"]="Package Runner - Execute npm packages without installing them globally"
+TOOL_DESCRIPTIONS["jq"]="JSON Processor - Command-line JSON processor and formatter"
+TOOL_DESCRIPTIONS["curl"]="Data Transfer Tool - Transfer data with URLs, supports various protocols"
+TOOL_DESCRIPTIONS["wget"]="File Downloader - Retrieve files using HTTP, HTTPS, FTP protocols"
+TOOL_DESCRIPTIONS["ping"]="Network Test - Test network connectivity to hosts"
+TOOL_DESCRIPTIONS["netstat"]="Network Statistics - Display network connections, routing tables, interface stats"
+TOOL_DESCRIPTIONS["ss"]="Socket Statistics - Utility to investigate sockets"
+TOOL_DESCRIPTIONS["traceroute"]="Network Path Tracer - Trace the path packets take to network hosts"
+TOOL_DESCRIPTIONS["ssh"]="Secure Shell - Secure remote login and command execution"
+TOOL_DESCRIPTIONS["nc"]="Netcat - Networking utility for reading/writing network connections"
+TOOL_DESCRIPTIONS["ps"]="Process Status - Report current process status"
+TOOL_DESCRIPTIONS["top"]="Process Viewer - Display dynamic real-time processes"
+TOOL_DESCRIPTIONS["htop"]="Interactive Process Viewer - Enhanced process viewer with interactive interface"
+TOOL_DESCRIPTIONS["lsof"]="List Open Files - List open files and the processes that opened them"
+TOOL_DESCRIPTIONS["find"]="File Search - Search for files and directories"
+TOOL_DESCRIPTIONS["locate"]="File Database Search - Find files by name using prebuilt database"
+TOOL_DESCRIPTIONS["which"]="Command Locator - Locate a command in the PATH"
+TOOL_DESCRIPTIONS["whereis"]="Command Locator - Locate binary, source, and manual page files"
+TOOL_DESCRIPTIONS["grep"]="Text Search - Search text patterns using regular expressions"
+TOOL_DESCRIPTIONS["sed"]="Stream Editor - Stream editor for filtering and transforming text"
+TOOL_DESCRIPTIONS["awk"]="Text Processing - Pattern scanning and text processing language"
+TOOL_DESCRIPTIONS["sort"]="Text Sorter - Sort lines of text files"
+TOOL_DESCRIPTIONS["uniq"]="Duplicate Remover - Remove duplicate lines from sorted files"
+TOOL_DESCRIPTIONS["tar"]="Archive Utility - Create and extract tape archive files"
+TOOL_DESCRIPTIONS["zip"]="Archive Utility - Package and compress files"
+TOOL_DESCRIPTIONS["unzip"]="Archive Extractor - Extract compressed zip files"
+TOOL_DESCRIPTIONS["gzip"]="Compression Utility - Compress and decompress files"
+TOOL_DESCRIPTIONS["gunzip"]="Decompression Utility - Decompress gzip compressed files"
+TOOL_DESCRIPTIONS["rsync"]="File Synchronization - Efficiently transfer and synchronize files"
+TOOL_DESCRIPTIONS["docker"]="Container Platform - Platform for developing, shipping, and running applications in containers"
+TOOL_DESCRIPTIONS["docker-compose"]="Multi-Container Tool - Define and run multi-container Docker applications"
+TOOL_DESCRIPTIONS["podman"]="Container Engine - Daemonless container engine for managing containers"
+TOOL_DESCRIPTIONS["kubectl"]="Kubernetes CLI - Command-line tool for managing Kubernetes clusters"
+TOOL_DESCRIPTIONS["helm"]="Kubernetes Package Manager - Package manager for Kubernetes applications"
+TOOL_DESCRIPTIONS["aws"]="AWS CLI - Command-line interface for Amazon Web Services"
+TOOL_DESCRIPTIONS["gcloud"]="Google Cloud CLI - Command-line interface for Google Cloud Platform"
+TOOL_DESCRIPTIONS["az"]="Azure CLI - Command-line interface for Microsoft Azure"
+TOOL_DESCRIPTIONS["terraform"]="Infrastructure as Code - Build, change, and version infrastructure safely"
+TOOL_DESCRIPTIONS["ansible"]="Configuration Management - Automate deployment, configuration, and orchestration"
+TOOL_DESCRIPTIONS["man"]="Manual Pages - Display manual pages for commands"
+TOOL_DESCRIPTIONS["tldr"]="Simplified Manual - Simplified and community-driven man pages"
+TOOL_DESCRIPTIONS["info"]="Info Documentation - Read Info documents"
+TOOL_DESCRIPTIONS["context7-cli"]="Documentation Fetcher - Fetch up-to-date documentation for any library or framework"
+
+# Usage examples database
+declare -A TOOL_EXAMPLES
+TOOL_EXAMPLES["gh"]="gh repo list
+gh issue create --title 'Bug fix' --body 'Fixes issue #123'
+gh pr create --title 'New feature' --body 'Adds new functionality'
+gh workflow list
+gh release create v1.0.0"
+
+TOOL_EXAMPLES["git"]="git init
+git add .
+git commit -m 'Initial commit'
+git remote add origin https://github.com/user/repo.git
+git push origin main
+git branch feature/new-feature
+git checkout main"
+
+TOOL_EXAMPLES["jq"]="cat file.json | jq '.key'
+echo '{\"name\": \"test\"}' | jq '.name'
+curl api.example.com/data | jq '.results[] | .id'
+jq -r '.key' file.json  # Raw output"
+
+TOOL_EXAMPLES["curl"]="curl https://api.example.com
+curl -X POST -H 'Content-Type: application/json' -d '{\"key\":\"value\"}' https://api.example.com
+curl -o output.txt https://example.com/file.txt
+curl -I https://example.com  # Headers only"
+
+TOOL_EXAMPLES["docker"]="docker run -it ubuntu bash
+docker build -t myapp .
+docker ps
+docker images
+docker exec -it container_id bash"
+
+TOOL_EXAMPLES["kubectl"]="kubectl get pods
+kubectl apply -f deployment.yaml
+kubectl logs pod_name
+kubectl exec -it pod_name -- bash
+kubectl describe service service_name"
+
+TOOL_EXAMPLES["aws"]="aws s3 ls
+aws ec2 describe-instances
+aws lambda invoke --function-name my-function output.txt
+aws configure"
+
+TOOL_EXAMPLES["grep"]="grep 'pattern' file.txt
+grep -r 'pattern' /path/to/search
+grep -i 'case insensitive' file.txt
+grep -n 'pattern' file.txt  # With line numbers"
+
+# Related tools database
+declare -A TOOL_RELATED
+TOOL_RELATED["gh"]="git, git-lfs, hub"
+TOOL_RELATED["git"]="gh, git-lfs, git-flow"
+TOOL_RELATED["jq"]="python, node, sed, awk"
+TOOL_RELATED["curl"]="wget, httpie, postman-cli"
+TOOL_RELATED["docker"]="docker-compose, podman, kubectl"
+TOOL_RELATED["kubectl"]="helm, kubens, kubectx, docker"
+TOOL_RELATED["aws"]="aws-vault, aws-shell, terraform"
+TOOL_RELATED["npm"]="yarn, pnpm, npx, node"
+TOOL_RELATED["grep"]="find, sed, awk, ripgrep"
+TOOL_RELATED["ps"]="top, htop, kill, nice"
+
+# Alternatives database
+declare -A TOOL_ALTERNATIVES
+TOOL_ALTERNATIVES["npm"]="yarn, pnpm"
+TOOL_ALTERNATIVES["curl"]="wget, httpie"
+TOOL_ALTERNATIVES["docker"]="podman, containerd"
+TOOL_ALTERNATIVES["top"]="htop, btop, glances"
+TOOL_ALTERNATIVES["grep"]="ripgrep (rg), ag, sift"
+TOOL_ALTERNATIVES["find"]="fd (find), fzf, locate"
+TOOL_ALTERNATIVES["man"]="tldr, info, --help"
+
+# Check if tool is available
+is_tool_available() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Get tool version
+get_tool_version() {
+    local tool="$1"
+    if ! is_tool_available "$tool"; then
+        echo "Not installed"
+        return
+    fi
+
+    # Try different version flags
+    if "$tool" --version >/dev/null 2>&1; then
+        "$tool" --version 2>/dev/null | head -1
+    elif "$tool" -V >/dev/null 2>&1; then
+        "$tool" -V 2>/dev/null | head -1
+    elif "$tool" version >/dev/null 2>&1; then
+        "$tool" version 2>/dev/null | head -1
+    elif [[ "$tool" == "python" ]] || [[ "$tool" == "python3" ]]; then
+        "$tool" --version 2>/dev/null || echo "Unable to get version"
+    elif [[ "$tool" == "node" ]]; then
+        "$tool" --version 2>/dev/null || echo "Unable to get version"
+    else
+        echo "Unable to get version"
+    fi
+}
+
+# Get tool location
+get_tool_location() {
+    local tool="$1"
+    if is_tool_available "$tool"; then
+        which "$tool" 2>/dev/null || echo "Unknown location"
+    else
+        echo "Not installed"
+    fi
+}
+
+# Get tool help excerpt
+get_tool_help() {
+    local tool="$1"
+    if ! is_tool_available "$tool"; then
+        echo "Tool not available"
+        return
+    fi
+
+    # Try different help flags and limit output
+    if "$tool" --help >/dev/null 2>&1; then
+        "$tool" --help 2>&1 | head -10 | grep -v "usage:" | head -8
+    elif "$tool" -h >/dev/null 2>&1; then
+        "$tool" -h 2>&1 | head -10 | grep -v "usage:" | head -8
+    elif [[ "$tool" == "man" ]]; then
+        echo "Display manual pages: man <command>"
+    else
+        echo "No help information available"
+    fi
+}
+
+# Display comprehensive tool information
+display_tool_info() {
+    local tool="$1"
+    local show_examples="${2:-false}"
+    local show_related="${3:-false}"
+
+    echo -e "${CYAN}================================${NC}"
+    echo -e "${CYAN}Tool Information: $tool${NC}"
+    echo -e "${CYAN}================================${NC}"
+
+    # Basic info
+    echo -e "\n${GREEN}Description:${NC}"
+    echo "  ${TOOL_DESCRIPTIONS[$tool]:-No description available}"
+
+    echo -e "\n${GREEN}Availability:${NC}"
+    if is_tool_available "$tool"; then
+        echo -e "  ${BLUE}✓${NC} Installed"
+        echo -e "  ${GREEN}Location:${NC} $(get_tool_location "$tool")"
+        echo -e "  ${GREEN}Version:${NC} $(get_tool_version "$tool")"
+    else
+        echo -e "  ${RED}✗${NC} Not installed"
+        echo -e "  ${YELLOW}Installation hint:${NC} Check package manager (brew, apt, npm, etc.)"
+    fi
+
+    # Usage information
+    echo -e "\n${GREEN}Quick Help:${NC}"
+    get_tool_help "$tool" | sed 's/^/  /'
+
+    # Related tools
+    if [[ "$show_related" == "true" ]] && [[ -n "${TOOL_RELATED[$tool]:-}" ]]; then
+        echo -e "\n${GREEN}Related Tools:${NC}"
+        for related in ${TOOL_RELATED[$tool]}; do
+            local status="✗"
+            local color="$RED"
+            if is_tool_available "$related"; then
+                status="✓"
+                color="$GREEN"
+            fi
+            echo -e "  $color$status${NC} $related"
+        done
+    fi
+
+    # Alternatives
+    if [[ -n "${TOOL_ALTERNATIVES[$tool]:-}" ]]; then
+        echo -e "\n${GREEN}Alternatives:${NC}"
+        for alt in ${TOOL_ALTERNATIVES[$tool]}; do
+            local status="✗"
+            local color="$RED"
+            if is_tool_available "$alt"; then
+                status="✓"
+                color="$GREEN"
+            fi
+            echo -e "  $color$status${NC} $alt"
+        done
+    fi
+
+    # Examples
+    if [[ "$show_examples" == "true" ]] && [[ -n "${TOOL_EXAMPLES[$tool]:-}" ]]; then
+        echo -e "\n${GREEN}Usage Examples:${NC}"
+        echo -e "${MAGENTA}${TOOL_EXAMPLES[$tool]}${NC}"
+    fi
+}
+
+# Search for tools by pattern
+search_tools() {
+    local pattern="$1"
+    echo -e "\n${CYAN}Searching for tools matching: $pattern${NC}"
+
+    local found_tools=()
+    pattern="${pattern,,}"  # Convert to lowercase for case-insensitive search
+
+    for tool in "${!TOOL_DESCRIPTIONS[@]}"; do
+        if [[ "${tool,,}" == *"$pattern"* ]] || [[ "${TOOL_DESCRIPTIONS[$tool],,}" == *"$pattern"* ]]; then
+            found_tools+=("$tool")
+        fi
+    done
+
+    if [ ${#found_tools[@]} -eq 0 ]; then
+        echo -e "${RED}No tools found matching '$pattern'${NC}"
+        return
+    fi
+
+    echo -e "${GREEN}Found tools:${NC}"
+    for tool in "${found_tools[@]}"; do
+        local status="✗"
+        local color="$RED"
+        if is_tool_available "$tool"; then
+            status="✓"
+            color="$GREEN"
+        fi
+        echo -e "  $color$status${NC} $tool: ${TOOL_DESCRIPTIONS[$tool]}"
+    done
+}
+
+# Show help
+show_help() {
+    cat << EOF
+${CYAN}CLI Tool Information Lookup${NC}
+
+${YELLOW}USAGE:${NC}
+    $0 [options] <tool_name>
+
+${YELLOW}OPTIONS:${NC}
+    -e, --examples         Show usage examples
+    -r, --related          Show related tools
+    -a, --all              Show all available information
+    -s, --search <pattern> Search for tools by name or description
+    -l, --list             List all known tools
+    -h, --help             Show this help message
+
+${YELLOW}EXAMPLES:${NC}
+    $0 jq                              # Basic information about jq
+    $0 --examples curl                 # Include usage examples
+    $0 --related docker                # Include related tools
+    $0 --all git                       # Show all information
+    $0 --search "json"                 # Search for JSON-related tools
+    $0 --list                          # List all known tools
+
+EOF
+}
+
+# List all known tools
+list_all_tools() {
+    echo -e "${CYAN}All Known CLI Tools${NC}"
+    echo -e "${YELLOW}====================${NC}"
+
+    local total=0
+    local available=0
+
+    for tool in $(printf '%s\n' "${!TOOL_DESCRIPTIONS[@]}" | sort); do
+        total=$((total + 1))
+        local status="✗"
+        local color="$RED"
+        if is_tool_available "$tool"; then
+            status="✓"
+            color="$GREEN"
+            available=$((available + 1))
+        fi
+        echo -e "$color$status${NC} $tool: ${TOOL_DESCRIPTIONS[$tool]}"
+    done
+
+    echo -e "\n${CYAN}Summary: $available/$total tools available${NC}"
+}
+
+# Main execution
+main() {
+    local show_examples="false"
+    local show_related="false"
+    local tool_name=""
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -e|--examples)
+                show_examples="true"
+                shift
+                ;;
+            -r|--related)
+                show_related="true"
+                shift
+                ;;
+            -a|--all)
+                show_examples="true"
+                show_related="true"
+                shift
+                ;;
+            -s|--search)
+                if [ -z "${2:-}" ]; then
+                    echo -e "${RED}Error: --search requires a pattern${NC}" >&2
+                    exit 1
+                fi
+                search_tools "$2"
+                exit 0
+                ;;
+            -l|--list)
+                list_all_tools
+                exit 0
+                ;;
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            -*)
+                echo -e "${RED}Unknown option: $1${NC}" >&2
+                show_help
+                exit 1
+                ;;
+            *)
+                if [ -z "$tool_name" ]; then
+                    tool_name="$1"
+                else
+                    echo -e "${RED}Error: Too many arguments${NC}" >&2
+                    show_help
+                    exit 1
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    if [ -z "$tool_name" ]; then
+        echo -e "${RED}Error: Tool name required${NC}" >&2
+        show_help
+        exit 1
+    fi
+
+    if [ -z "${TOOL_DESCRIPTIONS[$tool_name]:-}" ]; then
+        echo -e "${RED}Error: Unknown tool '$tool_name'${NC}" >&2
+        echo -e "${YELLOW}Use --list to see all known tools${NC}" >&2
+        exit 1
+    fi
+
+    display_tool_info "$tool_name" "$show_examples" "$show_related"
+}
+
+main "$@"
