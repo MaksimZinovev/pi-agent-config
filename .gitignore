@@ -91,6 +91,7 @@ out/
 # === Secrets / Pi-specific ===
 auth.json
 sessions/
+mcp.json                  # generated from mcp.json.template via envsubst
 mcp-cache.json
 mcp-npx-cache.json
 run-history.jsonl
