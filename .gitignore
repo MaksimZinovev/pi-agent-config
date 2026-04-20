@@ -94,3 +94,5 @@ out/
 *.tmp
 *.temp
 .cache/
+.specstory
+.local
