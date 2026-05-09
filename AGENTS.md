@@ -1,14 +1,23 @@
-
 # Agents.md
 
 You have access to many tools and skills. Choose the optimal tools and skills for the current task and context. Always let user know if you have any issues with acting skills or tools, then wait for feedback.
 
+- ALWAYS check and present evidence before reporting the change or task is
+is done, No evidence - not done. Prefer programmatic checks over direct check where possible.
 - Use skills proactively without asking.
 - Autonomously decide which skills to use.
 - Apply relevant skills as needed — don't wait for permission.
 - If you encounter repeating failures or errros (2 or more), immediately use skill: systematic-debugging.
 - Auto-invoke systematic-debugging on any error
-- Always use cx before reading files
+- Reading files tool selection:
+  - Indexed dir (has git root): `cx` first → `ck` → `ast_grep` → `read`
+  - Non-indexed dir (no git root): `ck` first → `ast_grep` → `read`
+  - Never use `grep`/`find` in either case.
+  - Use relative paths from project root (e.g. `cx overview apps/cli/src/auto.ts`).
+  - Before editing → `cx definition --name X` gives exact text for Edit's `old_string`.
+  - Fall back to `read` only when you need the full file or context beyond the symbol body.
+  - New codebase → start with `cx overview .` to orient before drilling in.
+  - Deeper tool details → see `AGENTS_TOOLING.md`.
 
 ## Skill Triggers (Invoke Immediately)
 
@@ -30,33 +39,7 @@ Core workflow:
 3. `agent-browser click @e1` / `fill @e2 "text"` - Interact using refs
 4. Re-snapshot after page changes
 
-## Search hierarchy: cx → ck → ast_grep_search/lsp_navigation → read (never grep/find)
 
-`cx` is auto-warmed at session start (cx-cache-warm extension) and `--root` is auto-injected.
-If `cx` reports "no indexed files" (non-code dirs, no git root), fall back to `ck` or `ast_grep_search`.
-Use relative paths from project root: `cx overview apps/cli/src/auto.ts` not absolute paths.
-
-- Explore a directory → `cx overview <dir>` (~20 tokens per entry)
-- Understand a file's structure → `cx overview <file>` (~200 tokens)
-- Find symbols across the project → `cx symbols [--kind K] [--name GLOB] [--file PATH]`
-- Read a specific function/type → `cx definition --name <name>` (~500 tokens)
-- Find all usages of a symbol → `cx references --name <name>` shows every usage with enclosing function and context
-- Check blast radius before refactoring → `cx references --name <name> --unique` shows one row per dependent function
-- Fall back to Read tool only when you need the full file or surrounding context beyond the symbol body
-- Text search → `ck "pattern"` (semantic grep, replaces grep/find — use before raw grep/find)
-- AST patterns → `ast_grep_search` (structural code matching, no indexing needed)
-
-
-## When to use cx/ck instead of Read or grep
-
-- New codebase → `cx overview .` then drill in. Cheaper than `ls` + reading files.
-- Before reading a file → `cx overview <file>` first. You often don't need the full file.
-- Before editing → `cx definition --name X` gives exact text for Edit's `old_string`.
-- Before refactoring → `cx references --name X --unique` shows which functions depend on X.
-- Text search → `ck "pattern"` (semantic grep, always prefer over grep/find).
-- After context compression → `cx overview` to re-orient, `cx definition` for specific symbols. Don't re-read the full file.
-
-## Quick reference
 
 ```
 cx overview PATH                                    file or directory table of contents
