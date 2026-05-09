@@ -9,7 +9,14 @@ Per-site quirks, workarounds, and configurations. Add entries as you encounter t
 **TL;DR:** Minimal page, only one link. Use other sites for interactive testing.
 
 - **Quirk:** No interactive elements beyond "More information" link.
-- **Workaround:** Use `duckduckgo.com` for testing interactive workflows.
+- **Workaround:**
+
+```bash
+# Use duckduckgo for interactive workflow testing instead
+agent-browser open https://duckduckgo.com
+agent-browser snapshot -i
+```
+
 - **Discovered:** 2025-01-09
 
 ---
@@ -43,5 +50,13 @@ agent-browser wait --load networkidle
 **TL;DR:** Automation-friendly, consistently accessible search box. Use as default test site.
 
 - **Quirk:** Generally cooperative. Search box always accessible via snapshot.
-- **Workaround:** Preferred search engine for automated testing.
+- **Workaround:**
+
+```bash
+agent-browser open https://duckduckgo.com
+agent-browser snapshot -i
+agent-browser fill @e1 "search query"
+agent-browser press Enter
+```
+
 - **Discovered:** 2025-01-09

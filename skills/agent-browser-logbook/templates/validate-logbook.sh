@@ -10,7 +10,7 @@
 # Usage:
 #   bash validate-logbook.sh              # check all files
 #   bash validate-logbook.sh pitfalls     # check only pitfalls.md
-#   bash validate-logbook.sh patterns site-specifics  # specific files
+#   bash validate-logbook.sh patterns site-specifics
 
 set -euo pipefail
 
@@ -18,12 +18,10 @@ MAX_LINES=40
 ERRORS=0
 WARNINGS=0
 
-# Resolve logbook directory (works via symlink or direct)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOGBOOK_DIR="$(dirname "$SCRIPT_DIR")"
 REFS_DIR="$LOGBOOK_DIR/references"
 
-# Determine which files to check
 VALID_NAMES=("pitfalls" "patterns" "site-specifics")
 FILES_TO_CHECK=()
 
@@ -35,7 +33,7 @@ else
     for arg in "$@"; do
         name="${arg%.md}"
         if [[ " ${VALID_NAMES[*]} " != *" $name "* ]]; then
-            echo "❌ Unknown file: ${name}.md — valid names: ${VALID_NAMES[*]}"
+            echo "❌ Unknown file: ${name}.md — valid: ${VALID_NAMES[*]}"
             ERRORS=$((ERRORS + 1))
             continue
         fi
@@ -43,122 +41,194 @@ else
     done
 fi
 
-# --- Extract entries: split file on ## lines (entry headings) ---
-# Lines starting with ### are subheadings WITHIN an entry, not delimiters.
-# The content before the first ## is the file preamble (skip it).
+# Extract entries using awk with RS/FS paragraph mode
+# Each entry = text between ## headings (not ###)
+# Uses ASCII unit separator (\036) as record delimiter
 extract_entries() {
     local file="$1"
-    # awk: accumulate lines into entry blocks, split on ^## 
-    # (but not ### which are subheadings inside entries)
     awk '
     /^## [^#]/ {
         if (block != "") print block
         block = $0
         next
     }
-    {
-        if (block != "") block = block "\n" $0
-    }
-    END {
-        if (block != "") print block
-    }
+    /^# / { next }   # skip file-level headings
+    { block = block "\n" $0 }
+    END { if (block != "") print block }
     ' "$file"
 }
 
-# --- Check 1: Entry length ---
+# Check 1: Entry length
 check_length() {
     local file="$1"
     local basename
     basename="$(basename "$file")"
-    
-    while IFS= read -r entry; do
-        [[ -z "$entry" ]] && continue
-        
-        local title
-        title="$(echo "$entry" | head -1 | sed 's/^## //')"
-        local lines
-        lines="$(echo "$entry" | wc -l | tr -d ' ')"
-        
-        if [[ "$lines" -gt "$MAX_LINES" ]]; then
-            echo "❌ LENGTH: ${basename} — \"${title}\" is ${lines} lines (max ${MAX_LINES})"
-            ERRORS=$((ERRORS + 1))
+
+    # Use temp file for entries to avoid IFS issues
+    local tmp
+    tmp="$(mktemp)"
+    extract_entries "$file" > "$tmp"
+
+    local entry_num=0
+    local in_entry=false
+    local entry_lines=0
+    local entry_title=""
+
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^##[[:space:]][^#] ]]; then
+            # Save previous entry if exists
+            if $in_entry && [[ $entry_lines -gt 0 ]]; then
+                if [[ $entry_lines -gt $MAX_LINES ]]; then
+                    echo "❌ LENGTH: ${basename} — \"${entry_title}\" is ${entry_lines} lines (max ${MAX_LINES})"
+                    ERRORS=$((ERRORS + 1))
+                fi
+            fi
+            # Start new entry
+            entry_num=$((entry_num + 1))
+            entry_title="$(echo "$line" | sed 's/^## //')"
+            entry_lines=1
+            in_entry=true
+        elif $in_entry; then
+            entry_lines=$((entry_lines + 1))
         fi
-    done < <(extract_entries "$file")
+    done < "$tmp"
+
+    # Check last entry
+    if $in_entry && [[ $entry_lines -gt $MAX_LINES ]]; then
+        echo "❌ LENGTH: ${basename} — \"${entry_title}\" is ${entry_lines} lines (max ${MAX_LINES})"
+        ERRORS=$((ERRORS + 1))
+    fi
+
+    rm -f "$tmp"
 }
 
-# --- Check 2: Required structure ---
+# Check 2: Required structure
 check_structure() {
     local file="$1"
     local basename
     basename="$(basename "$file")"
-    
-    while IFS= read -r entry; do
-        [[ -z "$entry" ]] && continue
-        
-        local title
-        title="$(echo "$entry" | head -1 | sed 's/^## //')"
-        
-        if [[ "$basename" == "site-specifics.md" ]]; then
-            # Site entries need: TL;DR (or Quirk), Discovered
-            if ! echo "$entry" | grep -qi "TL;DR\|Quirk"; then
-                echo "❌ STRUCTURE: ${basename} — \"${title}\" missing TL;DR or Quirk line"
-                ERRORS=$((ERRORS + 1))
+
+    local tmp
+    tmp="$(mktemp)"
+    extract_entries "$file" > "$tmp"
+
+    local entry_num=0
+    local current_entry=""
+    local entry_title=""
+
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^##[[:space:]][^#] ]]; then
+            # Process previous entry
+            if [[ -n "$current_entry" ]] && [[ $entry_num -gt 0 ]]; then
+                _check_entry_fields "$basename" "$entry_title" "$current_entry"
             fi
-            if ! echo "$entry" | grep -qi "Discovered"; then
-                echo "⚠️  WARN: ${basename} — \"${title}\" missing Discovered date"
-                WARNINGS=$((WARNINGS + 1))
-            fi
+            # Start new entry
+            entry_num=$((entry_num + 1))
+            entry_title="$(echo "$line" | sed 's/^## //')"
+            current_entry="$line"
         else
-            # Pitfalls and patterns need: TL;DR, Context, Applies to
-            if ! echo "$entry" | grep -q "TL;DR"; then
-                echo "❌ STRUCTURE: ${basename} — \"${title}\" missing **TL;DR:**"
-                ERRORS=$((ERRORS + 1))
-            fi
-            if ! echo "$entry" | grep -qi "Context"; then
-                echo "❌ STRUCTURE: ${basename} — \"${title}\" missing **Context:**"
-                ERRORS=$((ERRORS + 1))
-            fi
-            if ! echo "$entry" | grep -qi "Applies to"; then
-                echo "❌ STRUCTURE: ${basename} — \"${title}\" missing **Applies to:**"
-                ERRORS=$((ERRORS + 1))
-            fi
+            current_entry="${current_entry}
+${line}"
         fi
-    done < <(extract_entries "$file")
+    done < "$tmp"
+
+    # Process last entry
+    if [[ -n "$current_entry" ]] && [[ $entry_num -gt 0 ]]; then
+        _check_entry_fields "$basename" "$entry_title" "$current_entry"
+    fi
+
+    rm -f "$tmp"
 }
 
-# --- Check 3: Bash code blocks ---
+_check_entry_fields() {
+    local basename="$1"
+    local title="$2"
+    local entry="$3"
+
+    if [[ "$basename" == "site-specifics.md" ]]; then
+        if ! echo "$entry" | grep -qi "TL;DR\|Quirk"; then
+            echo "❌ STRUCTURE: ${basename} — \"${title}\" missing TL;DR or Quirk"
+            ERRORS=$((ERRORS + 1))
+        fi
+        if ! echo "$entry" | grep -qi "Discovered"; then
+            echo "⚠️  WARN: ${basename} — \"${title}\" missing Discovered date"
+            WARNINGS=$((WARNINGS + 1))
+        fi
+    else
+        if ! echo "$entry" | grep -q "TL;DR"; then
+            echo "❌ STRUCTURE: ${basename} — \"${title}\" missing **TL;DR:**"
+            ERRORS=$((ERRORS + 1))
+        fi
+        if ! echo "$entry" | grep -qi "Context"; then
+            echo "❌ STRUCTURE: ${basename} — \"${title}\" missing **Context:**"
+            ERRORS=$((ERRORS + 1))
+        fi
+        if ! echo "$entry" | grep -qi "Applies to"; then
+            echo "❌ STRUCTURE: ${basename} — \"${title}\" missing **Applies to:**"
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+}
+
+# Check 3: Bash code blocks
 check_bash_blocks() {
     local file="$1"
     local basename
     basename="$(basename "$file")"
-    
-    while IFS= read -r entry; do
-        [[ -z "$entry" ]] && continue
-        
-        local title
-        title="$(echo "$entry" | head -1 | sed 's/^## //')"
+
+    local tmp
+    tmp="$(mktemp)"
+    extract_entries "$file" > "$tmp"
+
+    local entry_num=0
+    local current_entry=""
+    local entry_title=""
+
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^##[[:space:]][^#] ]]; then
+            # Process previous entry
+            if [[ -n "$current_entry" ]] && [[ $entry_num -gt 0 ]]; then
+                local bash_count
+                bash_count="$(echo "$current_entry" | grep -c '```bash' || true)"
+                if [[ "$bash_count" -eq 0 ]]; then
+                    echo "❌ NO-BASH: ${basename} — \"${entry_title}\" has no \`\`\`bash code block"
+                    ERRORS=$((ERRORS + 1))
+                fi
+            fi
+            entry_num=$((entry_num + 1))
+            entry_title="$(echo "$line" | sed 's/^## //')"
+            current_entry="$line"
+        else
+            current_entry="${current_entry}
+${line}"
+        fi
+    done < "$tmp"
+
+    # Process last entry
+    if [[ -n "$current_entry" ]] && [[ $entry_num -gt 0 ]]; then
         local bash_count
-        bash_count="$(echo "$entry" | grep -c '```bash' || true)"
-        
+        bash_count="$(echo "$current_entry" | grep -c '```bash' || true)"
         if [[ "$bash_count" -eq 0 ]]; then
-            echo "❌ NO-BASH: ${basename} — \"${title}\" has no \`\`\`bash code block"
+            echo "❌ NO-BASH: ${basename} — \"${entry_title}\" has no \`\`\`bash code block"
             ERRORS=$((ERRORS + 1))
         fi
-    done < <(extract_entries "$file")
+    fi
+
+    rm -f "$tmp"
 }
 
-# --- Check 4: Duplicate titles ---
+# Check 4: Duplicate titles
 check_duplicates() {
     local file="$1"
     local basename
     basename="$(basename "$file")"
-    
+
     local headings
     headings="$(grep '^## [^#]' "$file" | sed 's/^## //' | sort)"
-    
+
     local dupes
     dupes="$(echo "$headings" | uniq -d)"
-    
+
     if [[ -n "$dupes" ]]; then
         while IFS= read -r dupe; do
             echo "❌ DUPLICATE: ${basename} — duplicate entry \"${dupe}\""
@@ -167,7 +237,7 @@ check_duplicates() {
     fi
 }
 
-# --- Main ---
+# Main
 echo "🔍 Validating agent-browser-logbook..."
 echo "   Max entry length: ${MAX_LINES} lines"
 echo ""
@@ -177,10 +247,10 @@ for file in "${FILES_TO_CHECK[@]}"; do
         echo "⚠️  SKIP: $file not found"
         continue
     fi
-    
+
     local_basename="$(basename "$file")"
     echo "📋 Checking ${local_basename}..."
-    
+
     check_length "$file"
     check_structure "$file"
     check_bash_blocks "$file"
