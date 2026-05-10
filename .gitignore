@@ -110,3 +110,7 @@ run-history.jsonl
 
 # === Python venvs (skills may bundle references) ===
 **/.venv/
+
+# Local 
+.ck 
+.local

@@ -3,7 +3,7 @@
 You have access to many tools and skills. Choose the optimal tools and skills for the current task and context. Always let user know if you have any issues with acting skills or tools, then wait for feedback.
 
 - ALWAYS check and present evidence before reporting the change or task is
-is done, No evidence - not done. Prefer programmatic checks over direct check where possible.
+  is done, No evidence - not done. Prefer programmatic checks over direct check where possible.
 - Use skills proactively without asking.
 - Autonomously decide which skills to use.
 - Apply relevant skills as needed — don't wait for permission.
@@ -12,6 +12,7 @@ is done, No evidence - not done. Prefer programmatic checks over direct check wh
 - Reading files tool selection:
   - Indexed dir (has git root): `cx` first → `ck` → `ast_grep` → `read`
   - Non-indexed dir (no git root): `ck` first → `ast_grep` → `read`
+  - **Pre-flight gate**: `cx overview .` and `ck --index .` must be run by the agent before grep/find are unblocked. If they fail, STOP and tell the user — do NOT fall back to `grep`/`find`.
   - Never use `grep`/`find` in either case.
   - Use relative paths from project root (e.g. `cx overview apps/cli/src/auto.ts`).
   - Before editing → `cx definition --name X` gives exact text for Edit's `old_string`.
@@ -21,16 +22,15 @@ is done, No evidence - not done. Prefer programmatic checks over direct check wh
 
 ## Skill Triggers (Invoke Immediately)
 
-| Trigger                               | Skill                            |
-| -------------------                   | -------------------------------- |
-| Unclear error                         | `systematic-debugging`           |
-| Need docs/evidence/install new tool   | `research-docs-grounding`        |
-| Browser automation                    | `agent-browser`                   |
-
+| Trigger                             | Skill                     |
+| ----------------------------------- | ------------------------- |
+| Unclear error                       | `systematic-debugging`    |
+| Need docs/evidence/install new tool | `research-docs-grounding` |
+| Browser automation                  | `agent-browser`           |
 
 ## Browser Automation
 
-Use `agent-browser` for web automation. Run `agent-browser --help` for all commands.  By default, I assume it is already installed globally.
+Use `agent-browser` for web automation. Run `agent-browser --help` for all commands. By default, I assume it is already installed globally.
 
 Core workflow:
 
@@ -38,8 +38,6 @@ Core workflow:
 2. `agent-browser snapshot -i` - Get interactive elements with refs (@e1, @e2)
 3. `agent-browser click @e1` / `fill @e2 "text"` - Interact using refs
 4. Re-snapshot after page changes
-
-
 
 ```
 cx overview PATH                                    file or directory table of contents
