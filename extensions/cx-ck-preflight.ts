@@ -20,7 +20,7 @@ let ckSeen = false;
 const BASH_GREP_FIND_RE = /(^|\s|\||;|&&)(grep|rg|ack|ag|find|fd)\s/;
 const BASH_CX_CK_RE = /\b(cx|ck)\s/;
 const BLOCK_REASON =
-	"🚫 [PRE-FLIGHT] grep/find blocked — cx/ck are faster and more accurate for this project. Run `cx overview .` and `ck --index .` first. If either fails, STOP and tell the user — do NOT work around this.";
+	'🚫 [PRE-FLIGHT] grep/find blocked — run `cx overview .` and `ck --index .` first. If either fails, STOP and tell the user. After preflight: `cx symbols --name "PATTERN"`, `cx references --name NAME`, `ck "PATTERN" PATH` (add --json for structured output). Run `cx skill` for full usage. Follow AGENTS.md.';
 
 export default function (pi: ExtensionAPI) {
 	pi.on("tool_call", (event) => {
