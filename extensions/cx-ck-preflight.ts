@@ -1,49 +1,56 @@
-// cx-ck-preflight
+// cx-ck-preflight — 3-phase onboarding gate enforcing the AGENTS.md escalation hierarchy.
 //
-// Pre-flight gate: blocks grep/find until the agent runs `cx overview .` and `ck --index .`.
-// Forces the habit of reaching for project tools before falling back to universal ones.
-//
-// Flow:
-//   1. Session starts — preflightPassed=false, grep/find are BLOCKED.
-//   2. Agent attempts grep/find → blocked with reason telling it to run cx/ck first.
-//   3. Agent runs `cx overview .` and `ck --index .` via bash (it does this itself, not the extension).
-//   4. Extension detects both commands → preflightPassed=true.
-//   5. From this point on, the extension does NOTHING — grep/find are fully unblocked.
-//      The cx-first-reminder extension still appends nudges on grep/find results, but
-//      this extension no longer blocks anything.
+// Phase 1: `cx overview .` — learn orientation. Use when: new codebase, re-orienting, before reading files.
+// Phase 2: `cx symbols/references/definition` — learn targeted search. Use when: looking for a symbol, definition, or usage.
+// Phase 3: `ck --index .` — learn semantic search. Use when: text search cx can't find, concepts, phrases.
+// After phase 3: extension does nothing. cx-first-reminder still nudges on grep/find results.
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
-let preflightPassed = false;
-let cxSeen = false;
-let ckSeen = false;
+// phase: 1=cx overview needed, 2=cx search needed, 3=ck index needed, 4=done
+let phase = 1;
 
 const BASH_GREP_FIND_RE = /(^|\s|\||;|&&)(grep|rg|ack|ag|find|fd)\s/;
 const BASH_CX_CK_RE = /\b(cx|ck)\s/;
-const BLOCK_REASON =
-	'🚫 [PRE-FLIGHT] grep/find blocked — run `cx overview .` and `ck --index .` first. If either fails, STOP and tell the user. After preflight: `cx symbols --name "PATTERN"`, `cx references --name NAME`, `ck "PATTERN" PATH` (add --json for structured output). Run `cx skill` for full usage. Follow AGENTS.md.';
+
+const PHASES: Record<number, string> = {
+	1: "🚫 [1/3] Run `cx overview .` first. (Orient: new codebase, before reading files.)",
+	2: '🚫 [2/3] cx ✓. Now run `cx symbols --name "PATTERN"` or `cx references --name NAME`. (Search: symbols, definitions, usages.)',
+	3: "🚫 [3/3] cx ✓. Run `ck --index .`. (Semantic search: text patterns cx can't find.) After this grep/find unblocked. AGENTS.md.",
+};
 
 export default function (pi: ExtensionAPI) {
 	pi.on("tool_call", (event) => {
-		// Detect when the agent runs cx overview . and ck --index .
-		if (!preflightPassed && event.toolName === "bash") {
+		// Detect phase completion
+		if (event.toolName === "bash") {
 			const cmd = (event.input as { command?: string })?.command ?? "";
-			if (/\bcx\s/.test(cmd) && /\boverview\b/.test(cmd)) cxSeen = true;
-			if (/\bck\s/.test(cmd) && /--index\b/.test(cmd)) ckSeen = true;
-			if (cxSeen && ckSeen) preflightPassed = true;
+			if (phase === 1 && /\bcx\s/.test(cmd) && /\boverview\b/i.test(cmd)) {
+				phase = 2;
+			} else if (
+				phase === 2 &&
+				/\bcx\s/.test(cmd) &&
+				/\b(symbols|references|definition)\b/i.test(cmd)
+			) {
+				phase = 3;
+			} else if (phase === 3 && /\bck\s/.test(cmd) && /--index\b/.test(cmd)) {
+				phase = 4;
+			}
 		}
 
-		if (preflightPassed) return;
+		// All phases complete — fully unblocked
+		if (phase >= 4) return;
+
+		const reason = PHASES[phase];
 
 		// Block direct grep/find tool calls
 		if (event.toolName === "grep" || event.toolName === "find") {
-			return { block: true, reason: BLOCK_REASON };
+			return { block: true, reason };
 		}
 
 		// Block bash commands using grep/find (but not cx/ck)
 		if (event.toolName === "bash") {
 			const cmd = (event.input as { command?: string })?.command ?? "";
 			if (BASH_GREP_FIND_RE.test(cmd) && !BASH_CX_CK_RE.test(cmd)) {
-				return { block: true, reason: BLOCK_REASON };
+				return { block: true, reason };
 			}
 		}
 	});
