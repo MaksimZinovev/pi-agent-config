@@ -5,14 +5,15 @@ You have access to many tools and skills. Choose the optimal tools and skills fo
 - ALWAYS check and present evidence before reporting the change or task is
   is done, No evidence - not done. Prefer programmatic checks over direct check where possible.
 - Use skills proactively without asking.
-- Autonomously decide which skills to use.
 - Apply relevant skills as needed — don't wait for permission.
 - If you encounter repeating failures or errros (2 or more), immediately use skill: systematic-debugging.
+- When an extension blocks a tool call, you MUST follow the instructions in the block message. Tool blocks are not suggestions — they fire because the extension has already determined a better path (indexed, faster, more accurate). Do NOT use alternative tools (read, bash, etc.) to circumvent the block. Every circumvention attempt wastes turns. Blocked tool = dead end. Pivot immediately.
 - Auto-invoke systematic-debugging on any error
 - Reading files tool selection:
+  - cx, ck - are command line tools. ALWAYS assume they are installed already
+  - If you have any issues with using cx, ck tools - stop, let user know and wait for feedback
   - Indexed dir (has git root): `cx` first → `ck` → `ast_grep` → `read`
   - Non-indexed dir (no git root): `ck` first → `ast_grep` → `read`
-  - **Pre-flight gate**: `cx overview .` and `ck --index .` must be run by the agent before grep/find are unblocked. If they fail, STOP and tell the user — do NOT fall back to `grep`/`find`.
   - Never use `grep`/`find` in either case.
   - Use relative paths from project root (e.g. `cx overview apps/cli/src/auto.ts`).
   - Before editing → `cx definition --name X` gives exact text for Edit's `old_string`.

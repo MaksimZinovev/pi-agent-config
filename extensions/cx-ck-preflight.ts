@@ -15,14 +15,16 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 // step: 1=cx overview, 2=cx search, 3=ck index, 4=ck search, 5=done
 let step = 1;
 
-const BASH_GREP_FIND_RE = /(^|\s|\||;|&&)(grep|rg|ack|ag|find|fd)\s/;
+const BASH_GREP_FIND_RE = /(^|\s|\||;|&&)(grep|rg|ack|ag|find|fd|ls|read)\s/;
+const BASH_CX_CK_RE = /\b(cx|ck)\s/;
 
 const BLOCK_MSGS: Record<number, string> = {
-	1: '🚫 [1/4] Grep/find blocked — past sessions show you skip cx/ck. DO NOT use bash grep/find unless you complete these steps. Checkpoint 1: Output your understanding in one line. Checkpoint 2: run `cx overview .` Next: `cx references --name NAME` or `cx symbols --name "PATTERN"`',
-	2: '🚫 [2/4] cx ✓. Run `cx symbols --name "PATTERN"` or `cx references --name NAME`. Next: `ck --index .` then `ck "PATTERN" PATH`',
-	3: '🚫 [3/4] cx ✓. Run `ck --index .`. Next: `ck "PATTERN" PATH`',
-	4: '🚫 [4/4] ck indexed ✓. Run `ck "PATTERN" PATH`. After this, grep/find unblocked. AGENTS.md.',
+	1: '🔴 [1/4] Blocked — you skipped cx/ck.' + '\nRun `cx overview .` do not read files to manually search',
+	2: '🔴 [2/4] Blocked - you did not run cx.' + '\nRun `cx symbols --name "PATTERN"` or `cx references --name NAME`. Next: `ck --index .` then `ck "PATTERN" PATH`',
+	3: '🔴 [3/4] Blocked - you did not run ck.' + '\nRun `ck --index .`. Next: `ck "PATTERN" PATH`',
+	4: '🔴 [4/4]  Blocked - you did not run ck. '+ '\nRun `ck "PATTERN" PATH`. After this, grep/find unblocked. Keep using learned tools usage as per AGENTS.md.',
 };
+
 
 export default function (pi: ExtensionAPI) {
 	pi.on("tool_call", (event) => {
@@ -60,7 +62,7 @@ export default function (pi: ExtensionAPI) {
 			const cmd = (event.input as { command?: string })?.command ?? "";
 
 			// Block bash grep/find in all steps (cx always allowed)
-			if (BASH_GREP_FIND_RE.test(cmd) && !/\bcx\s/.test(cmd)) {
+			if (BASH_GREP_FIND_RE.test(cmd) && !BASH_CX_CK_RE.test(cmd)) {
 				return { block: true, reason };
 			}
 
