@@ -7,7 +7,7 @@ progressive disclosure: **TL;DR first**, then expand.
 
 ## For `references/pitfalls.md`
 
-```markdown
+````markdown
 ## [YYYY-MM-DD] Short title
 
 **TL;DR:** One sentence — the fix or takeaway. Scannable in 2 seconds.
@@ -22,7 +22,9 @@ progressive disclosure: **TL;DR first**, then expand.
 ### The fix
 
 \```bash
+
 # Minimal runnable commands — copy-paste and it works
+
 agent-browser open <url>
 agent-browser wait --load networkidle
 agent-browser snapshot -i
@@ -31,13 +33,13 @@ agent-browser snapshot -i
 ### Why (optional)
 
 1-2 sentences on the underlying cause. Skip if obvious.
-```
+````
 
 ---
 
 ## For `references/patterns.md`
 
-```markdown
+````markdown
 ## [YYYY-MM-DD] Short title
 
 **TL;DR:** One sentence — the pattern takeaway. Scannable in 2 seconds.
@@ -48,20 +50,22 @@ agent-browser snapshot -i
 ### The pattern
 
 \```bash
+
 # Step-by-step runnable commands
+
 agent-browser open <url>
 agent-browser wait --load networkidle
 agent-browser snapshot -i
 \```
 
 **Key insight:** Why this works better than the obvious approach.
-```
+````
 
 ---
 
 ## For `references/site-specifics.md`
 
-```markdown
+````markdown
 ## <domain>
 
 **TL;DR:** One sentence — the main quirk or workaround.
@@ -72,11 +76,13 @@ agent-browser snapshot -i
 \```bash
 agent-browser open https://<domain>
 agent-browser wait --load networkidle
+
 # site-specific commands here
+
 \```
 
 - **Discovered:** YYYY-MM-DD
-```
+````
 
 ---
 

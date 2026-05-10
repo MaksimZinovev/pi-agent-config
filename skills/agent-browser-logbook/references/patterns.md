@@ -35,6 +35,37 @@ agent-browser snapshot -i
 
 ---
 
+## [2025-05-10] Auth restore: state load vs --state vs session-name
+
+**Context:** Re-using authenticated browser sessions across agent-browser restarts.
+**Problem:** Three different mechanisms exist and mixing them up causes auth failures.
+**Solution:** Use the right one for the situation:
+
+```bash
+# PATTERN A: Session name (best for recurring tasks)
+# Auto-saves on close, auto-restores on next open
+agent-browser --session-name jira open https://jira.example.com
+# ... authenticate ...
+agent-browser close
+# Next run: auto-restores, no auth needed
+agent-browser --session-name jira open https://jira.example.com
+
+# PATTERN B: state load (for running daemon)
+# Daemon already running, need to inject auth
+agent-browser state load ./auth.json
+agent-browser open https://jira.example.com
+
+# PATTERN C: --state flag (only at daemon launch)
+# Must close daemon first
+agent-browser close --all
+agent-browser --state ./auth.json open https://jira.example.com
+```
+
+**Rule:** `--session-name` > `state load` > `--state`. Prefer session names.
+**Applies to:** core — authentication, session management
+
+---
+
 ## [2025-01-09] Quick data extraction with get commands
 
 **TL;DR:** Use `snapshot -i` to discover refs, then `get text/attr/value/count` for efficient extraction — no need to parse full HTML.

@@ -6,7 +6,7 @@ allowed-tools: Bash(agent-browser:*), Bash(npx agent-browser:*), Bash(mkdir:*), 
 
 # agent-browser Logbook
 
-Living memory of hard-won knowledge from real tasks. Canonical skills (core, electron, dogfood) teach *how* agent-browser works. This logbook teaches *what actually works*.
+Living memory of hard-won knowledge from real tasks. Canonical skills (core, electron, dogfood) teach _how_ agent-browser works. This logbook teaches _what actually works_.
 
 ## When to read
 
@@ -29,7 +29,7 @@ Living memory of hard-won knowledge from real tasks. Canonical skills (core, ele
 
 Every entry uses progressive disclosure: **title + one-liner first** so a reader can scan quickly, then expand for details.
 
-```
+````
 ## [YYYY-MM-DD] Short title
 
 **TL;DR:** One sentence — the fix or takeaway. Scannable in 2 seconds.
@@ -48,12 +48,13 @@ Every entry uses progressive disclosure: **title + one-liner first** so a reader
 agent-browser open <url>
 agent-browser wait --load networkidle
 agent-browser snapshot -i
-```
+````
 
 ### Why (optional, if non-obvious)
 
 1-2 sentences on the underlying cause. Skip if obvious from the fix.
-```
+
+````
 
 ## Entry quality rules
 
@@ -91,7 +92,7 @@ Run before committing logbook changes:
 
 ```bash
 bash ~/.pi/agent/skills/agent-browser-logbook/templates/validate-logbook.sh
-```
+````
 
 Checks entry length (40 lines max), required structure (`TL;DR`, `Context`, `Applies to`), bash code block presence, and duplicate titles.
 

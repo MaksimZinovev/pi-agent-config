@@ -60,3 +60,14 @@ agent-browser press Enter
 ```
 
 - **Discovered:** 2025-01-09
+
+---
+
+## automatify-dev.atlassian.net (Jira)
+
+- **Quirk:** Atlassian login redirects through `id.atlassian.com` with multi-step OAuth/SSO flow. The URL changes multiple times (login → join/user-access → final redirect). Simple `wait --load` is not enough — need to poll for final URL or check page title.
+- **Quirk:** Jira pages are heavily SPA-loaded. After `open`, need `wait --load networkidle` then `snapshot -i` for full content. Initial snapshot may show incomplete content.
+- **Quirk:** Jira uses deeply nested shadow-DOM-like structures. `snapshot -i` works well but refs can be very numerous (200+ elements). Use `snapshot -s "selector"` to scope to specific panels.
+- **Workaround for auth:** Save state after login with `agent-browser state save ./auth.json`. Reuse with `agent-browser --state ./auth.json open <url>`. Session cookies expire, so re-auth may be needed periodically.
+- **Workaround for slow load:** Always use `wait --load networkidle` after `open` on Jira pages.
+- **Discovered:** 2025-05-10
