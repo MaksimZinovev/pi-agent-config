@@ -2,19 +2,24 @@
 //
 // Step 1: `cx overview .` — learn orientation. Use when: new codebase, re-orienting, before reading files.
 // Step 2: `cx symbols/references/definition` — learn targeted search. Use when: symbols, definitions, usages.
-// Step 3: `ck --index .` or `ck --status` — index for semantic search (or check existing index). Prerequisite for step 4.
+// Step 3: `ck --index .` or `ck --status` — index for semantic search (or check existing index).
 // Step 4: `ck "PATTERN" PATH` — learn semantic search. Use when: text patterns cx can't find.
 // After step 4: extension does nothing. cx-first-reminder still nudges on grep/find results.
 //
-// Key improvement: uses steer messages + system prompt injection (not just block) to make
-// instructions unignorable by the model. See steer-model reference for rationale.
-//
-// Debounce: one block-steer per step, avoids stale/overlapping messages.
+// Key mechanisms (see steer-model reference):
+//   - `deliverAs: "steer"` messages: injected before model's next reasoning step
+//   - `before_agent_start`: step-specific system prompt injection (highest weight)
+//   - `session_start`: proactive steer to begin onboarding
+//   - Debounced block steers: one steer per step, avoids stale/overlapping messages
+//   - Context-aware steers: parsed tool output enriches subsequent step guidance (C2)
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
 let step = 1;
 let lastSteeredStep = 0;
+// C2: Context extracted from tool output for enriched steer messages
+let overviewInfo = "";
+let extractedNames: string[] = [];
 
 const BASH_GREP_FIND_RE = /(^|\s|\||;|&&)(grep|rg|ack|ag|find|fd)\s/;
 const BASH_CX_CK_RE = /\b(cx|ck)\s/;
@@ -28,19 +33,21 @@ const STEP_LABELS: Record<number, string> = {
 
 const STEP_SYSTEM_PROMPTS: Record<number, string> = {
 	1: "[PREFLIGHT GATE] You must run `cx overview .` before using any search tools. grep, find, rg, ack, ag, fd, and ck are BLOCKED until you complete this step. Do NOT attempt to use them.",
-	2: "[PREFLIGHT GATE] Run `cx symbols --name PATTERN` or `cx references --name NAME` next. grep, find, rg, ack, ag, fd, and ck are still BLOCKED.",
+	2: "[PREFLIGHT GATE] Run `cx symbols --name PATTERN` or `cx references --name NAME` next. Use specific names from the overview results. grep, find, rg, ack, ag, fd, and ck are still BLOCKED.",
 	3: "[PREFLIGHT GATE] Run `ck --index .` (or `ck --status` if previously indexed) next. grep, find, rg, ack, ag, fd are still BLOCKED.",
-	4: '[PREFLIGHT GATE] Run `ck "PATTERN" PATH` next. grep, find, rg, ack, ag, fd are still BLOCKED.',
+	4: '[PREFLIGHT GATE] Run `ck "PATTERN" PATH` next with a specific single term. E.g., `ck "Subscriptions" src/` — NOT `ck "payment subscription"`. grep, find, rg, ack, ag, fd are still BLOCKED.',
 };
 
 const BLOCK_MSGS: Record<number, string> = {
 	1: "⚠️ [Preflight 1/4] Use `cx overview .` first to learn codebase orientation. Search tools are blocked until this step is completed.",
-	2: '⚠️ [Preflight 2/4] Use `cx symbols --name PATTERN` or `cx references --name NAME` next. Then `ck --index .` followed by `ck "PATTERN" PATH`.',
-	3: '⚠️ [Preflight 3/4] Run `ck --index .` (or `ck --status` to check) to index for semantic search. Then proceed to `ck "PATTERN" PATH`.',
-	4: '⚠️ [Preflight 4/4] Run `ck "PATTERN" PATH` for semantic search. After this, grep/find will be unblocked.',
+	2: '⚠️ [Preflight 2/4] Use `cx symbols --name PATTERN` or `cx references --name NAME` next. Use specific names, not wildcards.',
+	3: "⚠️ [Preflight 3/4] Run `ck --index .` (or `ck --status` to check) to index for semantic search. Then proceed to `ck \"PATTERN\" PATH`.",
+	4: '⚠️ [Preflight 4/4] Run `ck "PATTERN" PATH` for semantic search. Use a specific single term, e.g., `ck "Subscriptions" src/`.',
 };
 
 const ENTRY_TYPE = "cx-ck-preflight";
+
+// --- State persistence ---
 
 function persistStep(pi: ExtensionAPI) {
 	pi.appendEntry(ENTRY_TYPE, { step });
@@ -60,6 +67,8 @@ function restoreStep(ctx: any): void {
 	}
 }
 
+// --- Status line ---
+
 function updateStatus(ctx: any) {
 	if (step >= 5) {
 		ctx.ui.setStatus("cx-ck-preflight", "✅ Preflight complete");
@@ -68,6 +77,8 @@ function updateStatus(ctx: any) {
 		ctx.ui.setStatus("cx-ck-preflight", `⚠️ Preflight [${step}/4]`);
 	}
 }
+
+// --- Step transition ---
 
 function advanceStep(
 	pi: ExtensionAPI,
@@ -92,6 +103,8 @@ function advanceStep(
 	);
 }
 
+// --- Debounced block steer ---
+
 function sendBlockSteer(pi: ExtensionAPI, message: string) {
 	if (lastSteeredStep === step) return;
 	lastSteeredStep = step;
@@ -108,9 +121,70 @@ function sendBlockSteer(pi: ExtensionAPI, message: string) {
 	);
 }
 
+// --- C2: Tool output parsing ---
+
+function extractResultText(result: any): string {
+	if (!result?.content) return "";
+	if (typeof result.content === "string") return result.content;
+	if (Array.isArray(result.content)) {
+		return result.content
+			.filter((c: any) => c?.type === "text")
+			.map((c: any) => c.text ?? "")
+			.join("\n");
+	}
+	return String(result.content);
+}
+
+// C2: Extract "(N files, M symbols)" from cx overview output
+function extractOverviewInfo(text: string): string {
+	const match = text.match(/\((\d+)\s+files?,\s*(\d+)\s+symbols?\)/);
+	if (match) return `${match[1]} files, ${match[2]} symbols`;
+	return "";
+}
+
+// C2: Extract symbol names from cx symbols output
+// Format: src/App.tsx,App,fn,function App()
+function extractSymbolNames(text: string): string[] {
+	const names: string[] = [];
+	for (const line of text.split("\n")) {
+		const match = line.match(/^[^,\n]+,([A-Za-z_][A-Za-z0-9_]*),/);
+		if (match) names.push(match[1]);
+	}
+	return names.slice(0, 8);
+}
+
+// --- Context-aware steer message builders ---
+
+function buildStep2Message(): string {
+	let msg = "✅ [Preflight 1/4] Complete. Next: run `cx symbols --name PATTERN` or `cx references --name NAME`.";
+	if (overviewInfo) msg += ` Codebase overview: ${overviewInfo}.`;
+	return msg;
+}
+
+function buildStep3Message(): string {
+	let msg = "✅ [Preflight 2/4] Complete. Next: run `ck --index .` (or `ck --status` to check).";
+	if (extractedNames.length > 0) {
+		msg += ` Key symbols found: ${extractedNames.join(", ")}.`;
+	}
+	return msg;
+}
+
+function buildStep4Message(): string {
+	let msg = '✅ [Preflight 3/4] Complete. Next: run `ck "PATTERN" PATH` for semantic search.';
+	if (extractedNames.length > 0) {
+		const examples = extractedNames.slice(0, 3).map((n) => `ck "${n}" src/`).join(", ");
+		msg += ` E.g., ${examples}.`;
+	} else {
+		msg += " E.g., `ck \"App\" src/`.";
+	}
+	msg += " Avoid vague multi-word queries like `ck \"payment subscription\"`.";
+	return msg;
+}
+
 // =============================================================================
 
 export default function (pi: ExtensionAPI) {
+	// --- session_start: restore state + initial steer ---
 	pi.on("session_start", (_event, ctx) => {
 		restoreStep(ctx);
 		updateStatus(ctx);
@@ -130,6 +204,7 @@ export default function (pi: ExtensionAPI) {
 		}
 	});
 
+	// --- before_agent_start: inject step into system prompt ---
 	pi.on("before_agent_start", (event, _ctx) => {
 		if (step >= 5) return;
 		return {
@@ -137,141 +212,103 @@ export default function (pi: ExtensionAPI) {
 		};
 	});
 
+	// --- tool_call: blocking only (step transitions happen in tool_result) ---
 	pi.on("tool_call", (event, ctx) => {
-		if (event.toolName === "bash") {
-			const cmd = (event.input as { command?: string })?.command ?? "";
-
-			// Step transitions
-			if (step === 1 && /\bcx\s+overview\b/i.test(cmd)) {
-				advanceStep(
-					pi,
-					ctx,
-					2,
-					"✅ [Preflight 1/4] Complete. Next: run `cx symbols --name PATTERN` or `cx references --name NAME`.",
-				);
-				return;
-			}
-			if (step === 2 && /\bcx\s+(symbols|references|definition)\b/i.test(cmd)) {
-				advanceStep(
-					pi,
-					ctx,
-					3,
-					"✅ [Preflight 2/4] Complete. Next: run `ck --index .`.",
-				);
-				return;
-			}
-			if (step === 3 && /\bck\s+.*--(?:index|status)\b/.test(cmd)) {
-				advanceStep(
-					pi,
-					ctx,
-					4,
-					'✅ [Preflight 3/4] Complete. Next: run `ck "PATTERN" PATH` for semantic search.',
-				);
-				return;
-			}
-			// Note: step 4 transition moved to tool_result to validate ck results (B1)
-		}
-
 		if (step >= 5) return;
 
 		const reason = BLOCK_MSGS[step];
 
+		// Block grep/find tool calls in all steps 1-4
 		if (event.toolName === "grep" || event.toolName === "find") {
-			sendBlockSteer(
-				pi,
-				`${reason} Blocked tool: ${event.toolName}. Complete preflight step ${step}/4 first.`,
-			);
+			sendBlockSteer(pi, `${reason} Blocked tool: ${event.toolName}. Complete preflight step ${step}/4 first.`);
 			return { block: true, reason };
 		}
 
 		if (event.toolName === "bash") {
 			const cmd = (event.input as { command?: string })?.command ?? "";
 
+			// Block bash grep/find in steps 1-4 (cx always allowed)
 			if (BASH_GREP_FIND_RE.test(cmd) && !BASH_CX_CK_RE.test(cmd)) {
-				sendBlockSteer(
-					pi,
-					`${reason} Blocked bash command containing grep/find. Complete preflight step ${step}/4 first.`,
-				);
+				sendBlockSteer(pi, `${reason} Blocked bash command containing grep/find. Complete preflight step ${step}/4 first.`);
 				return { block: true, reason };
 			}
 
+			// Block ck until step 2 is done (must learn cx search first)
 			if (step <= 2 && /\bck\s/.test(cmd)) {
-				sendBlockSteer(
-					pi,
-					`${reason} Blocked ck command. Learn cx search first (step ${step}/4).`,
-				);
+				sendBlockSteer(pi, `${reason} Blocked ck command. Learn cx search first (step ${step}/4).`);
 				return { block: true, reason };
 			}
 		}
 	});
 
-	// --- tool_result: B1 — validate step 4 ck results before advancing ---
-	// Step 4 only advances if ck returns actual results, not "No matches found".
-	// Also handles steps 1–3 transitions via tool_result for future C2 support.
-
-	// Helper: extract text from bash tool result
-	function extractResultText(result: any): string {
-		if (!result?.content) return "";
-		if (typeof result.content === "string") return result.content;
-		if (Array.isArray(result.content)) {
-			return result.content
-				.filter((c: any) => c?.type === "text")
-				.map((c: any) => c.text ?? "")
-				.join("\n");
-		}
-		return String(result.content);
-	}
+	// --- tool_result: step transitions + output parsing (C2 + B1) ---
+	// Steps 1-3 transitions moved here from tool_call so we can parse
+	// command output and enrich steer messages with extracted context.
 
 	// Step 4 ck regex: a search query, NOT --index/--status/--clean/--help/--version
 	const CK_SEARCH_RE = /\bck\s+(?!.*--(?:index|status|clean|help|version)\b)/;
-
-	// Regex detecting failed/empty results
+	// Regex detecting failed/empty results (B1)
 	const NO_MATCHES_RE = /no matches found|command failed|exit code [1-9]/i;
 
 	pi.on("tool_result", (event, ctx) => {
 		if (event.toolName !== "bash") return;
-		if (step !== 4) return;
 
 		const cmd = (event.input as { command?: string })?.command ?? "";
-
-		// Only handle ck search commands (not --index, --status, etc.)
-		if (!CK_SEARCH_RE.test(cmd)) return;
-
 		const resultText = extractResultText(event.result);
 
-		if (NO_MATCHES_RE.test(resultText)) {
-			// B1: ck returned no matches — stay on step 4, guide with better query tips
-			let guidance = '⚠️ [Preflight 4/4] Your `ck` query returned no matches. Try a more specific single-term query.';
-			guidance += ' E.g., `ck "Subscriptions" src/` or `ck "App" src/`.';
-			guidance += ' Avoid vague multi-word queries like `ck "payment subscription authentication"`.';
-
-			pi.sendMessage(
-				{
-					customType: "cx-ck-preflight-retry",
-					content: guidance,
-					display: true,
-				},
-				{
-					triggerTurn: true,
-					deliverAs: "steer",
-				},
-			);
+		// Step 1→2: cx overview (C2: parse overview info)
+		if (step === 1 && /\bcx\s+overview\b/i.test(cmd)) {
+			overviewInfo = extractOverviewInfo(resultText);
+			advanceStep(pi, ctx, 2, buildStep2Message());
 			return;
 		}
 
-		// Results found — advance to step 5
-		advanceStep(
-			pi,
-			ctx,
-			5,
-			"✅ [Preflight 4/4] Complete! All search tools are now unblocked. Continue using cx/ck as per AGENTS.md.",
-		);
-	});
+		// Step 2→3: cx symbols/references/definition (C2: parse symbol names)
+		if (step === 2 && /\bcx\s+(symbols|references|definition)\b/i.test(cmd)) {
+			const names = extractSymbolNames(resultText);
+			if (names.length > 0) extractedNames = names;
+			advanceStep(pi, ctx, 3, buildStep3Message());
+			return;
+		}
 
-	// B1: Also detect step 4 completion in tool_call to prevent the bash command
-	// from being blocked by other handlers. The actual advancement happens in tool_result.
-	// This is a no-op return that lets the ck search command through without blocking.
-	// (The blocking logic already allows ck when step > 2, so this is just for clarity.)
+		// Step 3→4: ck --index or ck --status (A1)
+		if (step === 3 && /\bck\s+.*--(?:index|status)\b/.test(cmd)) {
+			advanceStep(pi, ctx, 4, buildStep4Message());
+			return;
+		}
+
+		// Step 4→5 or retry: ck search (B1: validate results)
+		if (step === 4 && CK_SEARCH_RE.test(cmd)) {
+			if (NO_MATCHES_RE.test(resultText)) {
+				// B1: ck returned no matches — stay on step 4, guide with better query tips
+				let guidance = '⚠️ [Preflight 4/4] Your `ck` query returned no matches. Try a more specific single-term query.';
+				if (extractedNames.length > 0) {
+					const examples = extractedNames.slice(0, 3).map((n) => `ck "${n}" src/`).join(", ");
+					guidance += ` E.g., ${examples}.`;
+				} else {
+					guidance += ' E.g., `ck "Subscriptions" src/` or `ck "App" src/`.';
+				}
+				guidance += ' Avoid vague multi-word queries like `ck "payment subscription authentication"`.';
+
+				pi.sendMessage(
+					{
+						customType: "cx-ck-preflight-retry",
+						content: guidance,
+						display: true,
+					},
+					{
+						triggerTurn: true,
+						deliverAs: "steer",
+					},
+				);
+				return;
+			}
+
+			// Results found — advance to step 5
+			advanceStep(pi, ctx, 5, "✅ [Preflight 4/4] Complete! All search tools are now unblocked. Continue using cx/ck as per AGENTS.md.");
+			return;
+		}
+	});
 
 	// --- /preflight command ---
 	pi.registerCommand("preflight", {
@@ -282,6 +319,8 @@ export default function (pi: ExtensionAPI) {
 			if (arg === "reset") {
 				step = 1;
 				lastSteeredStep = 0;
+				overviewInfo = "";
+				extractedNames = [];
 				persistStep(pi);
 				updateStatus(ctx);
 				ctx.ui.notify("🔄 Preflight reset to step 1/4", "info");
@@ -295,10 +334,7 @@ export default function (pi: ExtensionAPI) {
 				if (step >= 5) {
 					ctx.ui.notify("✅ Preflight complete — all tools unblocked", "info");
 				} else {
-					ctx.ui.notify(
-						`⚠️ Preflight step ${step}/4: ${STEP_LABELS[step]}`,
-						"info",
-					);
+					ctx.ui.notify(`⚠️ Preflight step ${step}/4: ${STEP_LABELS[step]}`, "info");
 				}
 			} else {
 				ctx.ui.notify("Usage: /preflight [status|reset|skip]", "info");
