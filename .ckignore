@@ -59,7 +59,9 @@
 
 # Config formats (issue #27)
 *.json
+*.jsonl
 *.yaml
 *.yml
 
 # Add your custom patterns below this line
+node_modules/
