@@ -169,19 +169,7 @@ export default function (pi: ExtensionAPI) {
 				);
 				return;
 			}
-			if (
-				step === 4 &&
-				/\bck\s/.test(cmd) &&
-				!/^(?:.*--index|--status|--clean|--help|--version)\b/.test(cmd)
-			) {
-				advanceStep(
-					pi,
-					ctx,
-					5,
-					"✅ [Preflight 4/4] Complete! All search tools are now unblocked. Continue using cx/ck as per AGENTS.md.",
-				);
-				return;
-			}
+			// Note: step 4 transition moved to tool_result to validate ck results (B1)
 		}
 
 		if (step >= 5) return;
@@ -217,6 +205,75 @@ export default function (pi: ExtensionAPI) {
 		}
 	});
 
+	// --- tool_result: B1 — validate step 4 ck results before advancing ---
+	// Step 4 only advances if ck returns actual results, not "No matches found".
+	// Also handles steps 1–3 transitions via tool_result for future C2 support.
+
+	// Helper: extract text from bash tool result
+	function extractResultText(result: any): string {
+		if (!result?.content) return "";
+		if (typeof result.content === "string") return result.content;
+		if (Array.isArray(result.content)) {
+			return result.content
+				.filter((c: any) => c?.type === "text")
+				.map((c: any) => c.text ?? "")
+				.join("\n");
+		}
+		return String(result.content);
+	}
+
+	// Step 4 ck regex: a search query, NOT --index/--status/--clean/--help/--version
+	const CK_SEARCH_RE = /\bck\s+(?!.*--(?:index|status|clean|help|version)\b)/;
+
+	// Regex detecting failed/empty results
+	const NO_MATCHES_RE = /no matches found|command failed|exit code [1-9]/i;
+
+	pi.on("tool_result", (event, ctx) => {
+		if (event.toolName !== "bash") return;
+		if (step !== 4) return;
+
+		const cmd = (event.input as { command?: string })?.command ?? "";
+
+		// Only handle ck search commands (not --index, --status, etc.)
+		if (!CK_SEARCH_RE.test(cmd)) return;
+
+		const resultText = extractResultText(event.result);
+
+		if (NO_MATCHES_RE.test(resultText)) {
+			// B1: ck returned no matches — stay on step 4, guide with better query tips
+			let guidance = '⚠️ [Preflight 4/4] Your `ck` query returned no matches. Try a more specific single-term query.';
+			guidance += ' E.g., `ck "Subscriptions" src/` or `ck "App" src/`.';
+			guidance += ' Avoid vague multi-word queries like `ck "payment subscription authentication"`.';
+
+			pi.sendMessage(
+				{
+					customType: "cx-ck-preflight-retry",
+					content: guidance,
+					display: true,
+				},
+				{
+					triggerTurn: true,
+					deliverAs: "steer",
+				},
+			);
+			return;
+		}
+
+		// Results found — advance to step 5
+		advanceStep(
+			pi,
+			ctx,
+			5,
+			"✅ [Preflight 4/4] Complete! All search tools are now unblocked. Continue using cx/ck as per AGENTS.md.",
+		);
+	});
+
+	// B1: Also detect step 4 completion in tool_call to prevent the bash command
+	// from being blocked by other handlers. The actual advancement happens in tool_result.
+	// This is a no-op return that lets the ck search command through without blocking.
+	// (The blocking logic already allows ck when step > 2, so this is just for clarity.)
+
+	// --- /preflight command ---
 	pi.registerCommand("preflight", {
 		description: "Show/reset cx-ck preflight onboarding status",
 		handler: async (args, ctx) => {
