@@ -20,10 +20,10 @@
   ],
   "extensions": [
     "/Users/maksim/.pi/agent/extensions/prune-large-toolresults.ts",
+    "/Users/maksim/.pi/agent/extensions/cx-ck-preflight.ts",
     "/Users/maksim/.pi/agent/extensions/answer.ts",
     "/Users/maksim/.pi/agent/extensions/files.ts",
-    "/Users/maksim/.pi/agent/extensions/cx-first-reminder.ts",
-    "/Users/maksim/.pi/agent/extensions/cx-ck-preflight.ts"
+    "/Users/maksim/.pi/agent/extensions/cx-first-reminder.ts"
   ],
   "hideThinkingBlock": false,
   "hooks": {

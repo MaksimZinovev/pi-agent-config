@@ -15,7 +15,7 @@
 //   - Segment-based blocking: checks each command segment independently (fixes || bypass)
 //   - try-catch on ALL event handlers: prevents silent failures from killing step transitions
 
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@mariozechner/pi-coding-agent";
 
 let step = 1;
 let lastSteeredStep = 0;
@@ -55,7 +55,7 @@ function persistStep(pi: ExtensionAPI) {
 	pi.appendEntry(ENTRY_TYPE, { step });
 }
 
-function restoreStep(ctx: any): void {
+function restoreStep(ctx: ExtensionContext): void {
 	const entries = ctx.sessionManager.getEntries();
 	for (let i = entries.length - 1; i >= 0; i--) {
 		const entry = entries[i];
@@ -71,7 +71,7 @@ function restoreStep(ctx: any): void {
 
 // --- Status line ---
 
-function updateStatus(ctx: any) {
+function updateStatus(ctx: ExtensionContext) {
 	if (step >= 5) {
 		ctx.ui.setStatus("cx-ck-preflight", "✅ Preflight complete");
 		setTimeout(() => ctx.ui.setStatus("cx-ck-preflight", ""), 5000);
@@ -84,7 +84,7 @@ function updateStatus(ctx: any) {
 
 function advanceStep(
 	pi: ExtensionAPI,
-	ctx: any,
+	ctx: ExtensionContext,
 	newStep: number,
 	message: string,
 ) {
@@ -125,22 +125,30 @@ function sendBlockSteer(pi: ExtensionAPI, message: string) {
 
 // --- C2: Tool output parsing ---
 
-function extractResultText(result: any): string {
+function extractResultText(result: unknown): string {
 	if (!result) return "";
-	// Try result.content (standard format)
-	if (result.content) {
-		if (typeof result.content === "string") return result.content;
-		if (Array.isArray(result.content)) {
-			const texts = result.content
+	// Handle event.content which is already an array of content blocks
+	if (Array.isArray(result)) {
+		const texts = result
+			.filter((c: any) => c?.type === "text")
+			.map((c: any) => c.text ?? "");
+		if (texts.length > 0) return texts.join("\n");
+	}
+	// Try result.content (standard format — for objects wrapping content)
+	const r = result as Record<string, unknown>;
+	if (r.content) {
+		if (typeof r.content === "string") return r.content;
+		if (Array.isArray(r.content)) {
+			const texts = r.content
 				.filter((c: any) => c?.type === "text")
 				.map((c: any) => c.text ?? "");
 			if (texts.length > 0) return texts.join("\n");
 		}
 	}
 	// Try result.output (some tools use this)
-	if (typeof (result as any).output === "string") return (result as any).output;
+	if (typeof r.output === "string") return r.output as string;
 	// Try result.text
-	if (typeof (result as any).text === "string") return (result as any).text;
+	if (typeof r.text === "string") return r.text as string;
 	// Try result as string (bash results sometimes return raw strings)
 	if (typeof result === "string") return result;
 	// Fix B: JSON.stringify fallback — brute-force search the entire result object
@@ -380,7 +388,7 @@ export default function (pi: ExtensionAPI) {
 							"(no cmd)")
 						: "(native)";
 				console.error(
-					`[cx-ck-preflight] tool_result: toolName="${event.toolName}" cmd="${cmdPreview}" step=${step} result_keys=${Object.keys(event.result || {}).join(",")} input_keys=${Object.keys(event.input || {}).join(",")}`,
+					`[cx-ck-preflight] tool_result: toolName="${event.toolName}" cmd="${cmdPreview}" step=${step} result_keys=${Object.keys(event.content || {}).join(",")} input_keys=${Object.keys(event.input || {}).join(",")}`,
 				);
 			}
 
@@ -389,10 +397,10 @@ export default function (pi: ExtensionAPI) {
 			if (event.toolName !== "bash" && !isCxOrCk) return;
 
 			const cmd = buildCmdString(event.toolName, event.input);
-			const resultText = extractResultText(event.result);
+			const resultText = extractResultText(event.content);
 
 			// Step 1→2: cx overview (C2: parse overview info)
-			if (step === 1 && /\bcx\s+overview\b/i.test(cmd)) {
+			if (step === 1 && /\bcx\b.*\boverview\b/i.test(cmd)) {
 				overviewInfo = extractOverviewInfo(resultText);
 				advanceStep(pi, ctx, 2, buildStep2Message());
 				return;
@@ -400,7 +408,7 @@ export default function (pi: ExtensionAPI) {
 
 			// Step 2→3: cx symbols/references/definition (C2: parse symbol names)
 			// B1-style: don't advance on empty/failed results
-			if (step === 2 && /\bcx\s+(symbols|references|definition)\b/i.test(cmd)) {
+			if (step === 2 && /\bcx\b.*\b(symbols|references|definition)\b/i.test(cmd)) {
 				if (NO_MATCHES_RE.test(resultText) || resultText.trim() === "") {
 					// Empty/failed result — guide the model to try a better query
 					pi.sendMessage(
@@ -497,7 +505,7 @@ export default function (pi: ExtensionAPI) {
 	// --- /preflight command ---
 	pi.registerCommand("preflight", {
 		description: "Show/reset cx-ck preflight onboarding status",
-		handler: async (args, ctx) => {
+		handler: async (args: string, ctx: ExtensionCommandContext) => {
 			try {
 				const arg = (args ?? "").trim().toLowerCase();
 

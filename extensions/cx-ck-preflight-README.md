@@ -57,3 +57,10 @@ Add to `settings.json` extensions array:
 ## Changelog
 
 - **v2** — Complete rewrite: steer messages, system prompt injection, state persistence, status line, `/preflight` command, debounced block steers, removed `ls`/`read` from blocklist, softened block messages, accepted `ck --status` for step 3.
+
+## Check for errors 
+
+:```js
+cd path-to-repo/pi-agent-config && npx tsc --noEmit 2>&1 | grep "cx-ck-preflight"
+
+```
