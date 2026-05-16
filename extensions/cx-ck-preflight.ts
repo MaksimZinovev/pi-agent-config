@@ -21,7 +21,6 @@ let step = 1;
 let lastSteeredStep = 0;
 // C2: Context extracted from tool output for enriched steer messages
 let overviewInfo = "";
-let extractedNames: string[] = [];
 
 const BASH_GREP_FIND_RE = /(^|\s|\||;|&&)(grep|rg|ack|ag|find|fd)\s/;
 const BASH_CX_CK_RE = /\b(cx|ck)\s/;
@@ -169,16 +168,7 @@ function extractOverviewInfo(text: string): string {
 	return "";
 }
 
-// C2: Extract symbol names from cx symbols output
-// Format: src/App.tsx,App,fn,function App()
-function extractSymbolNames(text: string): string[] {
-	const names: string[] = [];
-	for (const line of text.split("\n")) {
-		const match = line.match(/^[^,\n]+,([A-Za-z_][A-Za-z0-9_]*),/);
-		if (match) names.push(match[1]);
-	}
-	return names.slice(0, 8);
-}
+
 
 // --- Context-aware steer message builders ---
 
@@ -194,30 +184,11 @@ function buildStep2Message(): string {
 }
 
 function buildStep3Message(): string {
-	let msg =
-		"✅ [Preflight 2/4] Complete. Next: run `ck --index .` (or `ck --status` to check). Symbols learned — no need to list them all, just proceed.";
-	if (extractedNames.length > 0) {
-		msg += ` Key symbols found: ${extractedNames.join(", ")}.`;
-	} else {
-		msg += " [debug: extractedNames empty, extractResultText may have failed]";
-	}
-	return msg;
+	return "✅ [Preflight 2/4] Complete. Next: run `ck --index .` (or `ck --status` to check).";
 }
 
 function buildStep4Message(): string {
-	let msg =
-		'✅ [Preflight 3/4] Complete. Next: run `ck "PATTERN" PATH` for semantic search. Be concise — report findings briefly.';
-	if (extractedNames.length > 0) {
-		const examples = extractedNames
-			.slice(0, 3)
-			.map((n) => `ck "${n}" src/`)
-			.join(", ");
-		msg += ` E.g., ${examples}.`;
-	} else {
-		msg += ' E.g., `ck "App" src/`.';
-	}
-	msg += ' Avoid vague multi-word queries like `ck "payment subscription"`. Be concise, no summary tables.';
-	return msg;
+	return '✅ [Preflight 3/4] Complete. Next: run `ck "PATTERN" PATH` for semantic search. E.g., `ck "App" src/` or `ck "Subscriptions" src/`. Avoid vague multi-word queries like `ck "payment subscription"`. Be concise, no summary tables.';
 }
 
 // --- Segment-based command blocking (fixes || bypass) ---
@@ -425,8 +396,6 @@ export default function (pi: ExtensionAPI) {
 					);
 					return;
 				}
-				const names = extractSymbolNames(resultText);
-				if (names.length > 0) extractedNames = names;
 				advanceStep(pi, ctx, 3, buildStep3Message());
 				return;
 			}
@@ -442,16 +411,7 @@ export default function (pi: ExtensionAPI) {
 				if (NO_MATCHES_RE.test(resultText)) {
 					// B1: ck returned no matches — stay on step 4, guide with better query tips
 					let guidance =
-						"⚠️ [Preflight 4/4] Your `ck` query returned no matches. Try a more specific single-term query.";
-					if (extractedNames.length > 0) {
-						const examples = extractedNames
-							.slice(0, 3)
-							.map((n) => `ck "${n}" src/`)
-							.join(", ");
-						guidance += ` E.g., ${examples}.`;
-					} else {
-						guidance += ' E.g., `ck "Subscriptions" src/` or `ck "App" src/`.';
-					}
+						'⚠️ [Preflight 4/4] Your `ck` query returned no matches. Try a more specific single-term query. E.g., `ck "Subscriptions" src/` or `ck "App" src/`.';
 					guidance +=
 						' Avoid vague multi-word queries like `ck "payment subscription authentication"`.';
 
@@ -513,7 +473,6 @@ export default function (pi: ExtensionAPI) {
 					step = 1;
 					lastSteeredStep = 0;
 					overviewInfo = "";
-					extractedNames = [];
 					persistStep(pi);
 					updateStatus(ctx);
 					ctx.ui.notify("🔄 Preflight reset to step 1/4", "info");

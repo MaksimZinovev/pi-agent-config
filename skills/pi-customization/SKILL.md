@@ -9,11 +9,11 @@ Composable terminal coding harness with skills, templates, extensions, and packa
 
 ## Core Components
 
-- **Skills**: Directory-based capability packages with instructions and optional tools
-- **Templates**: Markdown snippets that expand into full prompts
-- **Extensions**: TypeScript modules adding tools, commands, events, and TUI features
-- **Packages**: Bundle resources for sharing via npm or git
-- **Models**: Configure AI providers via `models.json`
+- Skills: Directory-based capability packages with instructions and optional tools
+- Templates: Markdown snippets that expand into full prompts
+- Extensions: TypeScript modules adding tools, commands, events, and TUI features
+- Packages: Bundle resources for sharing via npm or git
+- Models: Configure AI providers via `models.json`
 
 ## Loading Locations
 
@@ -43,11 +43,11 @@ Disable with `--no-extensions`, `--no-skills`, `--no-prompt-templates`.
 
 ## Four Modes
 
-**Interactive** (default): Full TUI experience
-**Print**: Simple text output
-**JSON**: Event stream for APIs
-**RPC**: JSON-RPC protocol
-**SDK**: Embed in applications
+Interactive (default): Full TUI experience
+Print: Simple text output
+JSON: Event stream for APIs
+RPC: JSON-RPC protocol
+SDK: Embed in applications
 
 ```bash
 pi --mode json    # JSON mode
@@ -110,10 +110,11 @@ Create `~/.pi/agent/models.json` for custom providers:
 
 ## Detailed Documentation
 
-- **Extensions**: See [extensions.md](./references/extensions.md)
-- **Steering model**: See [extensions.md](./references/extensions-steer-model.md)
-- **Skills**: See [skills.md](./references/skills.md)
-- **Templates**: See [templates.md](./references/templates.md)
-- **Packages**: See [packages.md](./references/packages.md)
-- **Sessions**: See [sessions.md](./references/sessions.md)
-- **Configuration**: See [config.md](./references/config.md)
+- Mistakes to Avoid — See [mistakes.md](./references/mistakes.md)
+- Extensions: See [extensions.md](./references/extensions.md)
+- Steering model: See [extensions.md](./references/extensions-steer-model.md)
+- Skills: See [skills.md](./references/skills.md)
+- Templates: See [templates.md](./references/templates.md)
+- Packages: See [packages.md](./references/packages.md)
+- Sessions: See [sessions.md](./references/sessions.md)
+- Configuration: See [config.md](./references/config.md)
