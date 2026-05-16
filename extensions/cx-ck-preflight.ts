@@ -125,25 +125,45 @@ function sendBlockSteer(pi: ExtensionAPI, message: string) {
 // --- C2: Tool output parsing ---
 
 function extractResultText(result: any): string {
-	if (!result) return "";
+	if (!result) {
+		console.error('[cx-ck-preflight] extractResultText: result is null/undefined');
+		return "";
+	}
 	// Try result.content (standard format)
 	if (result.content) {
-		if (typeof result.content === "string") return result.content;
+		if (typeof result.content === "string") {
+			console.error(`[cx-ck-preflight] extractResultText: got string content, len=${result.content.length}`);
+			return result.content;
+		}
 		if (Array.isArray(result.content)) {
 			const texts = result.content
 				.filter((c: any) => c?.type === "text")
 				.map((c: any) => c.text ?? "");
-			if (texts.length > 0) return texts.join("\n");
+			if (texts.length > 0) {
+				console.error(`[cx-ck-preflight] extractResultText: got array content, ${texts.length} text parts, total=${texts.join("").length} chars`);
+				return texts.join("\n");
+			}
 		}
 	}
 	// Try result.output (some tools use this)
-	if (typeof (result as any).output === "string") return (result as any).output;
+	if (typeof (result as any).output === "string") {
+		console.error(`[cx-ck-preflight] extractResultText: got output, len=${(result as any).output.length}`);
+		return (result as any).output;
+	}
 	// Try result.text
-	if (typeof (result as any).text === "string") return (result as any).text;
+	if (typeof (result as any).text === "string") {
+		console.error(`[cx-ck-preflight] extractResultText: got text, len=${(result as any).text.length}`);
+		return (result as any).text;
+	}
 	// Try result as string (bash results sometimes return raw strings)
-	if (typeof result === "string") return result;
+	if (typeof result === "string") {
+		console.error(`[cx-ck-preflight] extractResultText: got raw string, len=${result.length}`);
+		return result;
+	}
 	// Debug: dump the structure so we can fix the parser
-	console.error(`[cx-ck-preflight] extractResultText: unknown format, keys=${Object.keys(result).join(",")} type=${typeof result.content} content_preview=${JSON.stringify(result).slice(0, 300)}`);
+	console.error(
+		`[cx-ck-preflight] extractResultText: unknown format, keys=${Object.keys(result).join(",")} type=${typeof result.content} content_preview=${JSON.stringify(result).slice(0, 300)}`,
+	);
 	return "";
 }
 
@@ -249,6 +269,16 @@ export default function (pi: ExtensionAPI) {
 
 	// --- tool_call: blocking only (step transitions happen in tool_result) ---
 	pi.on("tool_call", (event, ctx) => {
+		// Debug: log ALL tool calls during steps 1-4
+		if (step <= 4) {
+			const cmdPreview = event.toolName === "bash"
+				? (event.input as { command?: string })?.command?.slice(0, 60) ?? "(no cmd)"
+				: "(native)";
+			console.error(
+				`[cx-ck-preflight] tool_call: toolName="${event.toolName}" cmd="${cmdPreview}" step=${step} input_keys=${Object.keys(event.input || {}).join(",")}`,
+			);
+		}
+
 		if (step >= 5) {
 			// Post-preflight: no blocking needed
 			return;
@@ -265,6 +295,15 @@ export default function (pi: ExtensionAPI) {
 			return { block: true, reason };
 		}
 
+		// Block ck native tool in steps 1-2 (must learn cx search first)
+		if (step <= 2 && event.toolName === "ck") {
+			sendBlockSteer(
+				pi,
+				`${reason} Blocked ck command. Learn cx search first (step ${step}/4).`,
+			);
+			return { block: true, reason };
+		}
+
 		if (event.toolName === "bash") {
 			const cmd = (event.input as { command?: string })?.command ?? "";
 
@@ -277,7 +316,7 @@ export default function (pi: ExtensionAPI) {
 				return { block: true, reason };
 			}
 
-			// Block ck until step 2 is done (must learn cx search first)
+			// Block ck in bash commands until step 2 is done (must learn cx search first)
 			if (step <= 2 && /\bck\s/.test(cmd)) {
 				sendBlockSteer(
 					pi,
@@ -291,16 +330,54 @@ export default function (pi: ExtensionAPI) {
 	// --- tool_result: step transitions + output parsing (C2 + B1) ---
 	// Steps 1-3 transitions moved here from tool_call so we can parse
 	// command output and enrich steer messages with extracted context.
+	// NOTE: cx/ck may be native tools (event.toolName === "cx"/"ck"), not just
+	// bash commands. We must handle both.
 
 	// Step 4 ck regex: a search query, NOT --index/--status/--clean/--help/--version
 	const CK_SEARCH_RE = /\bck\s+(?!.*--(?:index|status|clean|help|version)\b)/;
 	// Regex detecting failed/empty results (B1)
 	const NO_MATCHES_RE = /no matches found|command failed|exit code [1-9]/i;
 
-	pi.on("tool_result", (event, ctx) => {
-		if (event.toolName !== "bash") return;
+	// Reconstruct a command string from the tool call for regex matching.
+	// Native cx/ck tools have inputs like { args: [...] } rather than { command: "..." }.
+	function buildCmdString(toolName: string, input: any): string {
+		// Bash tools have { command: "..." }
+		if (input?.command && typeof input.command === "string")
+			return input.command;
+		// Native cx/ck tools: reconstruct from toolName + args
+		if (toolName === "cx" || toolName === "ck") {
+			const args = Array.isArray(input?.args) ? input.args.join(" ") : "";
+			// Also try other common input shapes
+			if (typeof input?.subcommand === "string")
+				return `${toolName} ${input.subcommand} ${args}`.trim();
+			if (typeof input?.query === "string") return `${toolName} ${input.query}`;
+			if (typeof input?.path === "string") return `${toolName} ${input.path}`;
+			// Debug: log unknown input shape
+			console.error(
+				`[cx-ck-preflight] buildCmdString: unknown cx/ck input shape for ${toolName}, keys=${Object.keys(input || {}).join(",")} input_preview=${JSON.stringify(input || {}).slice(0, 300)}`,
+			);
+			return `${toolName} ${args}`.trim();
+		}
+		// Fallback: just tool name
+		return toolName;
+	}
 
-		const cmd = (event.input as { command?: string })?.command ?? "";
+	pi.on("tool_result", (event, ctx) => {
+		// Debug: log ALL tool calls during steps 1-4 to diagnose event shapes
+		if (step <= 4) {
+			const cmdPreview = event.toolName === "bash"
+				? (event.input as { command?: string })?.command?.slice(0, 60) ?? "(no cmd)"
+				: "(native)";
+			console.error(
+				`[cx-ck-preflight] tool_result: toolName="${event.toolName}" cmd="${cmdPreview}" step=${step} result_keys=${Object.keys(event.result || {}).join(",")} input_keys=${Object.keys(event.input || {}).join(",")}`,
+			);
+		}
+
+		// Only process cx, ck, or bash tool calls
+		const isCxOrCk = event.toolName === "cx" || event.toolName === "ck";
+		if (event.toolName !== "bash" && !isCxOrCk) return;
+
+		const cmd = buildCmdString(event.toolName, event.input);
 		const resultText = extractResultText(event.result);
 
 		// Step 1→2: cx overview (C2: parse overview info)
@@ -318,7 +395,8 @@ export default function (pi: ExtensionAPI) {
 				pi.sendMessage(
 					{
 						customType: "cx-ck-preflight-retry",
-						content: "⚠️ [Preflight 2/4] Your cx query returned no results. Try `cx symbols --name '*'` to list all symbols, or a more specific name like `cx symbols --name App`.",
+						content:
+							"⚠️ [Preflight 2/4] Your cx query returned no results. Try `cx symbols --name '*'` to list all symbols, or a more specific name like `cx symbols --name App`.",
 						display: true,
 					},
 					{
