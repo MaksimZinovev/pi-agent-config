@@ -12,6 +12,7 @@
 //   - `session_start`: proactive steer to begin onboarding
 //   - Debounced block steers: one steer per step, avoids stale/overlapping messages
 //   - Context-aware steers: parsed tool output enriches subsequent step guidance (C2)
+//   - Segment-based blocking: checks each command segment independently (fixes || bypass)
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
@@ -124,15 +125,24 @@ function sendBlockSteer(pi: ExtensionAPI, message: string) {
 // --- C2: Tool output parsing ---
 
 function extractResultText(result: any): string {
-	if (!result?.content) return "";
-	if (typeof result.content === "string") return result.content;
-	if (Array.isArray(result.content)) {
-		return result.content
-			.filter((c: any) => c?.type === "text")
-			.map((c: any) => c.text ?? "")
-			.join("\n");
+	if (!result) return "";
+	// Try result.content (standard format)
+	if (result.content) {
+		if (typeof result.content === "string") return result.content;
+		if (Array.isArray(result.content)) {
+			return result.content
+				.filter((c: any) => c?.type === "text")
+				.map((c: any) => c.text ?? "")
+				.join("\n");
+		}
 	}
-	return String(result.content);
+	// Try result.output (some tools use this)
+	if (typeof (result as any).output === "string") return (result as any).output;
+	// Try result.text
+	if (typeof (result as any).text === "string") return (result as any).text;
+	// Try result as string (bash results sometimes return raw strings)
+	if (typeof result === "string") return result;
+	return "";
 }
 
 // C2: Extract "(N files, M symbols)" from cx overview output
@@ -181,6 +191,23 @@ function buildStep4Message(): string {
 	return msg;
 }
 
+// --- Segment-based command blocking (fixes || bypass) ---
+
+function containsBlockedSegment(cmd: string): boolean {
+	// Split on shell operators: ||, &&, ;, |, newlines
+	const segments = cmd.split(/\s*(?:\|\||&&|;|\|)\s*/);
+	for (const seg of segments) {
+		// Check if this segment contains grep/find/ls
+		if (BASH_GREP_FIND_RE.test(seg)) {
+			// But allow if it also contains cx/ck (explicit intent to use project tools)
+			if (!BASH_CX_CK_RE.test(seg)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 // =============================================================================
 
 export default function (pi: ExtensionAPI) {
@@ -214,7 +241,10 @@ export default function (pi: ExtensionAPI) {
 
 	// --- tool_call: blocking only (step transitions happen in tool_result) ---
 	pi.on("tool_call", (event, ctx) => {
-		if (step >= 5) return;
+		if (step >= 5) {
+			// Post-preflight: no blocking needed
+			return;
+		}
 
 		const reason = BLOCK_MSGS[step];
 
@@ -227,8 +257,8 @@ export default function (pi: ExtensionAPI) {
 		if (event.toolName === "bash") {
 			const cmd = (event.input as { command?: string })?.command ?? "";
 
-			// Block bash grep/find in steps 1-4 (cx always allowed)
-			if (BASH_GREP_FIND_RE.test(cmd) && !BASH_CX_CK_RE.test(cmd)) {
+			// Segment-based blocking: check each part of compound commands
+			if (containsBlockedSegment(cmd)) {
 				sendBlockSteer(pi, `${reason} Blocked bash command containing grep/find. Complete preflight step ${step}/4 first.`);
 				return { block: true, reason };
 			}
@@ -307,6 +337,20 @@ export default function (pi: ExtensionAPI) {
 			// Results found — advance to step 5
 			advanceStep(pi, ctx, 5, "✅ [Preflight 4/4] Complete! All search tools are now unblocked. Continue using cx/ck as per AGENTS.md.");
 			return;
+		}
+
+		// Post-preflight: gentle nudge on bash grep/find (bridges gap with cx-first-reminder)
+		if (step >= 5 && BASH_GREP_FIND_RE.test(cmd) && !BASH_CX_CK_RE.test(cmd)) {
+			pi.sendMessage(
+				{
+					customType: "cx-ck-preflight-nudge",
+					content: "💡 Consider using `cx symbols` or `ck` instead of grep/find for better search.",
+					display: true,
+				},
+				{
+					deliverAs: "followUp",
+				},
+			);
 		}
 	});
 
