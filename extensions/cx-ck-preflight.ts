@@ -126,44 +126,33 @@ function sendBlockSteer(pi: ExtensionAPI, message: string) {
 
 function extractResultText(result: any): string {
 	if (!result) {
-		console.error('[cx-ck-preflight] extractResultText: result is null/undefined');
+		console.error("[cx-ck-preflight] extractResultText: result is null/undefined");
 		return "";
 	}
 	// Try result.content (standard format)
 	if (result.content) {
 		if (typeof result.content === "string") {
-			console.error(`[cx-ck-preflight] extractResultText: got string content, len=${result.content.length}`);
 			return result.content;
 		}
 		if (Array.isArray(result.content)) {
 			const texts = result.content
 				.filter((c: any) => c?.type === "text")
 				.map((c: any) => c.text ?? "");
-			if (texts.length > 0) {
-				console.error(`[cx-ck-preflight] extractResultText: got array content, ${texts.length} text parts, total=${texts.join("").length} chars`);
-				return texts.join("\n");
-			}
+			if (texts.length > 0) return texts.join("\n");
 		}
 	}
 	// Try result.output (some tools use this)
-	if (typeof (result as any).output === "string") {
-		console.error(`[cx-ck-preflight] extractResultText: got output, len=${(result as any).output.length}`);
-		return (result as any).output;
-	}
+	if (typeof (result as any).output === "string") return (result as any).output;
 	// Try result.text
-	if (typeof (result as any).text === "string") {
-		console.error(`[cx-ck-preflight] extractResultText: got text, len=${(result as any).text.length}`);
-		return (result as any).text;
-	}
+	if (typeof (result as any).text === "string") return (result as any).text;
 	// Try result as string (bash results sometimes return raw strings)
-	if (typeof result === "string") {
-		console.error(`[cx-ck-preflight] extractResultText: got raw string, len=${result.length}`);
-		return result;
+	if (typeof result === "string") return result;
+	// Fix B: JSON.stringify fallback — brute-force search the entire result object
+	const json = JSON.stringify(result);
+	if (json.length > 0) {
+		console.error(`[cx-ck-preflight] extractResultText: format unknown, using JSON fallback. keys=${Object.keys(result).join(",")} preview=${json.slice(0, 300)}`);
+		return json;
 	}
-	// Debug: dump the structure so we can fix the parser
-	console.error(
-		`[cx-ck-preflight] extractResultText: unknown format, keys=${Object.keys(result).join(",")} type=${typeof result.content} content_preview=${JSON.stringify(result).slice(0, 300)}`,
-	);
 	return "";
 }
 
@@ -190,7 +179,11 @@ function extractSymbolNames(text: string): string[] {
 function buildStep2Message(): string {
 	let msg =
 		"✅ [Preflight 1/4] Complete. Next: run `cx symbols --name '*'` to list all symbols, or `cx symbols --name PATTERN` for specific ones.";
-	if (overviewInfo) msg += ` Codebase overview: ${overviewInfo}.`;
+	if (overviewInfo) {
+		msg += ` Codebase overview: ${overviewInfo}.`;
+	} else {
+		msg += ` [debug: overviewInfo empty, extractResultText may have failed]`;
+	}
 	return msg;
 }
 
@@ -199,6 +192,8 @@ function buildStep3Message(): string {
 		"✅ [Preflight 2/4] Complete. Next: run `ck --index .` (or `ck --status` to check).";
 	if (extractedNames.length > 0) {
 		msg += ` Key symbols found: ${extractedNames.join(", ")}.`;
+	} else {
+		msg += ` [debug: extractedNames empty, extractResultText may have failed]`;
 	}
 	return msg;
 }
@@ -271,9 +266,11 @@ export default function (pi: ExtensionAPI) {
 	pi.on("tool_call", (event, ctx) => {
 		// Debug: log ALL tool calls during steps 1-4
 		if (step <= 4) {
-			const cmdPreview = event.toolName === "bash"
-				? (event.input as { command?: string })?.command?.slice(0, 60) ?? "(no cmd)"
-				: "(native)";
+			const cmdPreview =
+				event.toolName === "bash"
+					? ((event.input as { command?: string })?.command?.slice(0, 60) ??
+						"(no cmd)")
+					: "(native)";
 			console.error(
 				`[cx-ck-preflight] tool_call: toolName="${event.toolName}" cmd="${cmdPreview}" step=${step} input_keys=${Object.keys(event.input || {}).join(",")}`,
 			);
@@ -365,9 +362,11 @@ export default function (pi: ExtensionAPI) {
 	pi.on("tool_result", (event, ctx) => {
 		// Debug: log ALL tool calls during steps 1-4 to diagnose event shapes
 		if (step <= 4) {
-			const cmdPreview = event.toolName === "bash"
-				? (event.input as { command?: string })?.command?.slice(0, 60) ?? "(no cmd)"
-				: "(native)";
+			const cmdPreview =
+				event.toolName === "bash"
+					? ((event.input as { command?: string })?.command?.slice(0, 60) ??
+						"(no cmd)")
+					: "(native)";
 			console.error(
 				`[cx-ck-preflight] tool_result: toolName="${event.toolName}" cmd="${cmdPreview}" step=${step} result_keys=${Object.keys(event.result || {}).join(",")} input_keys=${Object.keys(event.input || {}).join(",")}`,
 			);
