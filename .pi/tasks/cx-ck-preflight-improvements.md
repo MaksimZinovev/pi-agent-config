@@ -1,71 +1,23 @@
-# cx-ck-preflight — Potential Improvements
+# cx-ck-preflight — Improvements Progress
 
-## 1. ✅ DONE — Debounce steer messages — avoid stale/overlapping steers
+## Commits (latest first)
+- `01390d2` Fix compound bypass, improve result parsing, add post-preflight nudges
+- `459d242` C2: context-aware steers from parsed tool output (moved transitions to tool_result)
+- `eaa1298` B1: validate step 4 ck results before advancing
+- `71af4a0` V2 rewrite: steer messages, system prompt injection, state persistence, debounce, /preflight cmd
 
-Track a `lastSteeredStep` — only send a block steer once per step. If the model gets blocked multiple times on the same step, only the first block sends a steer. Subsequent blocks just return `{ block: true, reason }` (the system prompt already reinforces the instruction).
+## Key Learnings
+1. **`{ block, reason }` alone is ignored** — models need steer messages + system prompt injection
+2. **`deliverAs: "steer"` + `triggerTurn: true`** is the most effective redirect (see extensions-steer-model.md)
+3. **`before_agent_start` system prompt injection** carries highest model weight
+4. **Debounce steers** — one steer per step prevents stale/overlapping messages
+5. **Step transitions belong in `tool_result`** — enables result validation (B1) and output parsing (C2)
+6. **Models chain `cx || find`** to bypass grep/find blocks — need segment-based checking
+7. **`extractResultText()` returned empty** in test — added fallbacks for result.output, result.text, raw string; **needs verification**
 
-```ts
-let lastSteeredStep = 0;
-
-// Inside the block handler:
-if (lastSteeredStep !== step) {
-  lastSteeredStep = step;
-  pi.sendMessage({ ... }, { deliverAs: "steer", triggerTurn: true });
-}
-return { block: true, reason };
-
-// Reset on step transition:
-function advanceStep(...) {
-  lastSteeredStep = 0; // allow steer on new step if blocked again
-  ...
-}
-```
-
-This reduces token waste and prevents confusing stale messages.
-
----
-
-## 2. ✅ DONE — Validate step transitions via tool_result — don't advance on failure
-
-Steps 1-3 transitions moved from `tool_call` to `tool_result`. This enables:
-- C2: Parsed tool output enriches steer messages
-- B1: Step 4 only advances if `ck` returns results (not "No matches found")
-- General robustness: commands must actually succeed before steps advance
-
-```ts
-pi.on("tool_result", (event, ctx) => {
-  if (event.toolName !== "bash") return;
-  const cmd = (event.input as { command?: string })?.command ?? "";
-  const resultText = extractResultText(event.result);
-
-  // Step 4→5: only advance if ck returned results
-  if (step === 4 && CK_SEARCH_RE.test(cmd)) {
-    if (NO_MATCHES_RE.test(resultText)) {
-      // Stay on step 4, guide with better query tips
-      pi.sendMessage({ content: guidance, ... }, { deliverAs: "steer", triggerTurn: true });
-      return;
-    }
-    advanceStep(pi, ctx, 5, successMessage);
-  }
-});
-```
-
----
-
-## 3. Post-preflight gentle nudges — reinforce cx/ck after graduation
-
-After step 5, the extension goes silent. But the model may still fall back to `grep`/`find` habits. The companion `cx-first-reminder.ts` handles this, but there's a gap: it only nudges on `grep`/`find` tool calls, not on bash grep/find.
-
-**Fix:** After step 4 completes, register a persistent `tool_result` handler that appends a subtle reminder on any grep/find usage (bash or tool), similar to what `cx-first-reminder.ts` does:
-
-```ts
-// After step 5, add lightweight nudges
-if (step >= 5) {
-  pi.on("tool_result", (event) => {
-    // Append gentle reminders on grep/find results
-    // "💡 Consider cx/ck for better search"
-  });
-}
-```
-
-This creates a soft landing from the hard gate to the reminder phase, bridging the gap until `cx-first-reminder` kicks in.
+## Decisions
+- `setActiveTools()` rejected — risk of breaking cx/ck internals that need grep
+- `ls` and `read` removed from blocklist — too broad, blocks basic navigation
+- Block messages softened from `🔴 STOP` to `⚠️` — steer+system-prompt do the heavy lifting
+- Post-preflight nudges use `deliverAs: "followUp"` (not "steer") — graduated, less intrusive
+- Segment-based blocking splits on `||, &&, ;, |` — each segment checked independently
