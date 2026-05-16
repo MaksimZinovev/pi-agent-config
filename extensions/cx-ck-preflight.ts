@@ -1,7 +1,7 @@
 // cx-ck-preflight — 4-step onboarding gate enforcing the AGENTS.md escalation hierarchy.
 //
 // Step 1: `cx overview .` — learn orientation. Use when: new codebase, re-orienting, before reading files.
-// Step 2: `cx symbols/references/definition` — learn targeted search. Use when: symbols, definitions, usages.
+// Step 2: `cx symbols --name '*'` (list all) or `cx symbols --name PATTERN` — learn targeted search.
 // Step 3: `ck --index .` or `ck --status` — index for semantic search (or check existing index).
 // Step 4: `ck "PATTERN" PATH` — learn semantic search. Use when: text patterns cx can't find.
 // After step 4: extension does nothing. cx-first-reminder still nudges on grep/find results.
@@ -27,21 +27,21 @@ const BASH_CX_CK_RE = /\b(cx|ck)\s/;
 
 const STEP_LABELS: Record<number, string> = {
 	1: "Run `cx overview .` to learn codebase orientation",
-	2: "Run `cx symbols --name PATTERN` or `cx references --name NAME`",
+	2: "Run `cx symbols --name '*'` to list all symbols, or `cx symbols --name PATTERN` for specific ones",
 	3: "Run `ck --index .` (or `ck --status` to check) to index for semantic search",
 	4: 'Run `ck "PATTERN" PATH` for semantic search',
 };
 
 const STEP_SYSTEM_PROMPTS: Record<number, string> = {
 	1: "[PREFLIGHT GATE] You must run `cx overview .` before using any search tools. grep, find, rg, ack, ag, fd, and ck are BLOCKED until you complete this step. Do NOT attempt to use them.",
-	2: "[PREFLIGHT GATE] Run `cx symbols --name PATTERN` or `cx references --name NAME` next. Use specific names from the overview results. grep, find, rg, ack, ag, fd, and ck are still BLOCKED.",
+	2: "[PREFLIGHT GATE] Run `cx symbols --name '*'` to list all symbols, or `cx symbols --name PATTERN` for specific ones. You can also use `cx references --name NAME` for usages. grep, find, rg, ack, ag, fd, and ck are still BLOCKED.",
 	3: "[PREFLIGHT GATE] Run `ck --index .` (or `ck --status` if previously indexed) next. grep, find, rg, ack, ag, fd are still BLOCKED.",
 	4: '[PREFLIGHT GATE] Run `ck "PATTERN" PATH` next with a specific single term. E.g., `ck "Subscriptions" src/` — NOT `ck "payment subscription"`. grep, find, rg, ack, ag, fd are still BLOCKED.',
 };
 
 const BLOCK_MSGS: Record<number, string> = {
 	1: "⚠️ [Preflight 1/4] Use `cx overview .` first to learn codebase orientation. Search tools are blocked until this step is completed.",
-	2: "⚠️ [Preflight 2/4] Use `cx symbols --name PATTERN` or `cx references --name NAME` next. Use specific names, not wildcards.",
+	2: "⚠️ [Preflight 2/4] Run `cx symbols --name '*'` to list all symbols, or `cx symbols --name PATTERN` for specific ones. `cx references --name NAME` also works.",
 	3: '⚠️ [Preflight 3/4] Run `ck --index .` (or `ck --status` to check) to index for semantic search. Then proceed to `ck "PATTERN" PATH`.',
 	4: '⚠️ [Preflight 4/4] Run `ck "PATTERN" PATH` for semantic search. Use a specific single term, e.g., `ck "Subscriptions" src/`.',
 };
@@ -169,7 +169,7 @@ function extractSymbolNames(text: string): string[] {
 
 function buildStep2Message(): string {
 	let msg =
-		"✅ [Preflight 1/4] Complete. Next: run `cx symbols --name PATTERN` or `cx references --name NAME`.";
+		"✅ [Preflight 1/4] Complete. Next: run `cx symbols --name '*'` to list all symbols, or `cx symbols --name PATTERN` for specific ones.";
 	if (overviewInfo) msg += ` Codebase overview: ${overviewInfo}.`;
 	return msg;
 }
@@ -318,7 +318,7 @@ export default function (pi: ExtensionAPI) {
 				pi.sendMessage(
 					{
 						customType: "cx-ck-preflight-retry",
-						content: "⚠️ [Preflight 2/4] Your cx query returned no results. Try a more specific name from the overview, e.g., `cx symbols --name App` or `cx references --name Subscriptions`.",
+						content: "⚠️ [Preflight 2/4] Your cx query returned no results. Try `cx symbols --name '*'` to list all symbols, or a more specific name like `cx symbols --name App`.",
 						display: true,
 					},
 					{
