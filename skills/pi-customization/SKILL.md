@@ -118,3 +118,4 @@ Create `~/.pi/agent/models.json` for custom providers:
 - Packages: See [packages.md](./references/packages.md)
 - Sessions: See [sessions.md](./references/sessions.md)
 - Configuration: See [config.md](./references/config.md)
+- TUI input/debugging: See [tui-input-debugging.md](./references/tui-input-debugging.md)

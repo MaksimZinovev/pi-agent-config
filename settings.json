@@ -4,26 +4,29 @@
     "keepRecentTokens": 12000,
     "reserveTokens": 8000
   },
-  "theme": "matte-black",
   "defaultModel": "glm-5.1:cloud",
   "defaultProvider": "ollama",
   "defaultThinkingLevel": "medium",
   "disabledExtensions": [
     "npm:taskplane",
-    "npm:pi-powerline-footer"
+    "npm:pi-subagents",
+    "/Users/maksim/.pi/agent/extensions/answer.ts",
+    "npm:pi-powerline-footer",
+    "/Users/maksim/.pi/agent/extensions/pi-monitor-reminder/index.ts"
   ],
   "enabledModels": [
     "ollama/glm-5.1:cloud",
-    "ollama/gemini-3-flash-preview:cloud",
     "ollama/minimax-m2.7:cloud",
-    "ollama/kimi-k2.5:cloud"
+    "ollama/minimax-m2.7:cloud",
+    "ollama/kimi-k2.5:cloud",
+    "ollama/minimax-m2.7:cloud"
   ],
   "extensions": [
     "/Users/maksim/.pi/agent/extensions/prune-large-toolresults.ts",
-    "/Users/maksim/.pi/agent/extensions/cx-ck-preflight.ts",
-    "/Users/maksim/.pi/agent/extensions/answer.ts",
     "/Users/maksim/.pi/agent/extensions/files.ts",
-    "/Users/maksim/.pi/agent/extensions/cx-first-reminder.ts"
+    "/Users/maksim/.pi/agent/extensions/cx-ck-preflight.ts",
+    "/Users/maksim/.pi/agent/extensions/cx-first-reminder.ts",
+    "/Users/maksim/.pi/agent/extensions/hex-edit-steer.ts"
   ],
   "hideThinkingBlock": false,
   "hooks": {
@@ -31,7 +34,7 @@
       {
         "hooks": [
           {
-            "command": "printf '%s' '⚠️ [DEEPWIKI WORKFLOW] Before deepwiki_ask_question: 1) deepwiki_read_wiki_structure first (verifies indexing) 2) deepwiki_read_wiki_contents for docs 3) Fallback: gh api if repo unindexed.'",
+            "command": "printf '%s' '\u26a0\ufe0f [DEEPWIKI WORKFLOW] Before deepwiki_ask_question: 1) deepwiki_read_wiki_structure first (verifies indexing) 2) deepwiki_read_wiki_contents for docs 3) Fallback: gh api if repo unindexed.'",
             "if": "mcp(*deepwiki*)",
             "type": "command"
           },
@@ -45,9 +48,8 @@
       }
     ]
   },
-  "lastChangelogVersion": "0.65.0",
+  "lastChangelogVersion": "0.74.0",
   "packages": [
-    "npm:pi-subagents",
     "npm:pi-lens",
     "npm:@lnittman/pi-interview",
     "npm:pi-mcp-adapter",
@@ -67,10 +69,16 @@
     "npm:pi-promptsmith",
     "npm:@danchamorro/pi-prompt-enhancer",
     "npm:pi-design-deck",
-    "npm:pi-fancy-footer",
     "npm:pi-studio",
     "git:github.com/victor-software-house/pi-curated-themes",
-    "npm:pi-annotate"
+    "npm:pi-annotate",
+    "npm:pi-monitor",
+    "npm:glimpseui",
+    "npm:pi-fancy-footer",
+    "npm:@spences10/pi-skills",
+    "npm:@vanillagreen/pi-skills-manager",
+    "npm:pi-subagents",
+    "npm:@vtstech/pi-hex-edit"
   ],
   "steeringMode": "one-at-a-time",
   "subagents": {
@@ -78,9 +86,43 @@
       "context-builder": {
         "model": "ollama/gemini-3-flash-preview:cloud"
       },
+      "oracle": {
+        "model": "ollama/minimax-m2.7:cloud"
+      },
       "planner": {
         "model": "ollama/glm-5.1:cloud"
+      },
+      "researcher": {
+        "fallbackModels": [
+          "ollama/glm-5.1:cloud"
+        ],
+        "inheritSkills": true,
+        "model": "ollama/minimax-m2.7:cloud",
+        "skills": [
+          "github-cli",
+          "research-docs-grounding",
+          "ck",
+          "cli-tool-discovery"
+        ]
+      },
+      "reviewer": {
+        "model": "ollama/glm-5.1:cloud"
+      },
+      "scout": {
+        "fallbackModels": [
+          "ollama/glm-5.1:cloud"
+        ],
+        "inheritSkills": true,
+        "model": "ollama/minimax-m2.7:cloud"
+      },
+      "worker": {
+        "model": "ollama/minimax-m2.7:cloud"
       }
     }
-  }
+  },
+  "terminal": {
+    "showImages": true
+  },
+  "theme": "aura",
+  "enableSkillCommands": true
 }

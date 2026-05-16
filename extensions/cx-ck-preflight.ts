@@ -174,7 +174,7 @@ function extractOverviewInfo(text: string): string {
 
 function buildStep2Message(): string {
 	let msg =
-		"✅ [Preflight 1/4] Complete. Next: run `cx symbols --name '*'` to list all symbols, or `cx symbols --name PATTERN` for specific ones. No summary needed — proceed to the next tool.";
+		"✅ [Preflight 1/4] Complete. Next do this NOW: run `cx symbols --name '*'` to list all symbols, or `cx symbols --name PATTERN` for specific ones. No summary needed — proceed to the next tool.";
 	if (overviewInfo) {
 		msg += ` Codebase overview: ${overviewInfo}.`;
 	} else {
@@ -184,11 +184,11 @@ function buildStep2Message(): string {
 }
 
 function buildStep3Message(): string {
-	return "✅ [Preflight 2/4] Complete. Next: run `ck --index .` (or `ck --status` to check).";
+	return "✅ [Preflight 2/4] Complete. Next do this NOW: run `ck --index .` (or `ck --status` to check).";
 }
 
 function buildStep4Message(): string {
-	return '✅ [Preflight 3/4] Complete. Next: run `ck "PATTERN" PATH` for semantic search. E.g., `ck "App" src/` or `ck "Subscriptions" src/`. Avoid vague multi-word queries like `ck "payment subscription"`. Be concise, no summary tables.';
+	return '✅ [Preflight 3/4] Complete. Next do this NOW: run `ck "PATTERN" PATH` for semantic search. E.g., `ck "App" src/` or `ck "Subscriptions" src/`. Avoid vague multi-word queries like `ck "payment subscription"`. Be concise, no summary tables.';
 }
 
 // --- Segment-based command blocking (fixes || bypass) ---
