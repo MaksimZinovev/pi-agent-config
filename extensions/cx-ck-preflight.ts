@@ -41,8 +41,8 @@ const STEP_SYSTEM_PROMPTS: Record<number, string> = {
 
 const BLOCK_MSGS: Record<number, string> = {
 	1: "⚠️ [Preflight 1/4] Use `cx overview .` first to learn codebase orientation. Search tools are blocked until this step is completed.",
-	2: '⚠️ [Preflight 2/4] Use `cx symbols --name PATTERN` or `cx references --name NAME` next. Use specific names, not wildcards.',
-	3: "⚠️ [Preflight 3/4] Run `ck --index .` (or `ck --status` to check) to index for semantic search. Then proceed to `ck \"PATTERN\" PATH`.",
+	2: "⚠️ [Preflight 2/4] Use `cx symbols --name PATTERN` or `cx references --name NAME` next. Use specific names, not wildcards.",
+	3: '⚠️ [Preflight 3/4] Run `ck --index .` (or `ck --status` to check) to index for semantic search. Then proceed to `ck "PATTERN" PATH`.',
 	4: '⚠️ [Preflight 4/4] Run `ck "PATTERN" PATH` for semantic search. Use a specific single term, e.g., `ck "Subscriptions" src/`.',
 };
 
@@ -130,10 +130,10 @@ function extractResultText(result: any): string {
 	if (result.content) {
 		if (typeof result.content === "string") return result.content;
 		if (Array.isArray(result.content)) {
-			return result.content
+			const texts = result.content
 				.filter((c: any) => c?.type === "text")
-				.map((c: any) => c.text ?? "")
-				.join("\n");
+				.map((c: any) => c.text ?? "");
+			if (texts.length > 0) return texts.join("\n");
 		}
 	}
 	// Try result.output (some tools use this)
@@ -142,6 +142,8 @@ function extractResultText(result: any): string {
 	if (typeof (result as any).text === "string") return (result as any).text;
 	// Try result as string (bash results sometimes return raw strings)
 	if (typeof result === "string") return result;
+	// Debug: dump the structure so we can fix the parser
+	console.error(`[cx-ck-preflight] extractResultText: unknown format, keys=${Object.keys(result).join(",")} type=${typeof result.content} content_preview=${JSON.stringify(result).slice(0, 300)}`);
 	return "";
 }
 
@@ -166,13 +168,15 @@ function extractSymbolNames(text: string): string[] {
 // --- Context-aware steer message builders ---
 
 function buildStep2Message(): string {
-	let msg = "✅ [Preflight 1/4] Complete. Next: run `cx symbols --name PATTERN` or `cx references --name NAME`.";
+	let msg =
+		"✅ [Preflight 1/4] Complete. Next: run `cx symbols --name PATTERN` or `cx references --name NAME`.";
 	if (overviewInfo) msg += ` Codebase overview: ${overviewInfo}.`;
 	return msg;
 }
 
 function buildStep3Message(): string {
-	let msg = "✅ [Preflight 2/4] Complete. Next: run `ck --index .` (or `ck --status` to check).";
+	let msg =
+		"✅ [Preflight 2/4] Complete. Next: run `ck --index .` (or `ck --status` to check).";
 	if (extractedNames.length > 0) {
 		msg += ` Key symbols found: ${extractedNames.join(", ")}.`;
 	}
@@ -180,14 +184,18 @@ function buildStep3Message(): string {
 }
 
 function buildStep4Message(): string {
-	let msg = '✅ [Preflight 3/4] Complete. Next: run `ck "PATTERN" PATH` for semantic search.';
+	let msg =
+		'✅ [Preflight 3/4] Complete. Next: run `ck "PATTERN" PATH` for semantic search.';
 	if (extractedNames.length > 0) {
-		const examples = extractedNames.slice(0, 3).map((n) => `ck "${n}" src/`).join(", ");
+		const examples = extractedNames
+			.slice(0, 3)
+			.map((n) => `ck "${n}" src/`)
+			.join(", ");
 		msg += ` E.g., ${examples}.`;
 	} else {
-		msg += " E.g., `ck \"App\" src/`.";
+		msg += ' E.g., `ck "App" src/`.';
 	}
-	msg += " Avoid vague multi-word queries like `ck \"payment subscription\"`.";
+	msg += ' Avoid vague multi-word queries like `ck "payment subscription"`.';
 	return msg;
 }
 
@@ -250,7 +258,10 @@ export default function (pi: ExtensionAPI) {
 
 		// Block grep/find tool calls in all steps 1-4
 		if (event.toolName === "grep" || event.toolName === "find") {
-			sendBlockSteer(pi, `${reason} Blocked tool: ${event.toolName}. Complete preflight step ${step}/4 first.`);
+			sendBlockSteer(
+				pi,
+				`${reason} Blocked tool: ${event.toolName}. Complete preflight step ${step}/4 first.`,
+			);
 			return { block: true, reason };
 		}
 
@@ -259,13 +270,19 @@ export default function (pi: ExtensionAPI) {
 
 			// Segment-based blocking: check each part of compound commands
 			if (containsBlockedSegment(cmd)) {
-				sendBlockSteer(pi, `${reason} Blocked bash command containing grep/find. Complete preflight step ${step}/4 first.`);
+				sendBlockSteer(
+					pi,
+					`${reason} Blocked bash command containing grep/find. Complete preflight step ${step}/4 first.`,
+				);
 				return { block: true, reason };
 			}
 
 			// Block ck until step 2 is done (must learn cx search first)
 			if (step <= 2 && /\bck\s/.test(cmd)) {
-				sendBlockSteer(pi, `${reason} Blocked ck command. Learn cx search first (step ${step}/4).`);
+				sendBlockSteer(
+					pi,
+					`${reason} Blocked ck command. Learn cx search first (step ${step}/4).`,
+				);
 				return { block: true, reason };
 			}
 		}
@@ -294,7 +311,23 @@ export default function (pi: ExtensionAPI) {
 		}
 
 		// Step 2→3: cx symbols/references/definition (C2: parse symbol names)
+		// B1-style: don't advance on empty/failed results
 		if (step === 2 && /\bcx\s+(symbols|references|definition)\b/i.test(cmd)) {
+			if (NO_MATCHES_RE.test(resultText) || resultText.trim() === "") {
+				// Empty/failed result — guide the model to try a better query
+				pi.sendMessage(
+					{
+						customType: "cx-ck-preflight-retry",
+						content: "⚠️ [Preflight 2/4] Your cx query returned no results. Try a more specific name from the overview, e.g., `cx symbols --name App` or `cx references --name Subscriptions`.",
+						display: true,
+					},
+					{
+						triggerTurn: true,
+						deliverAs: "steer",
+					},
+				);
+				return;
+			}
 			const names = extractSymbolNames(resultText);
 			if (names.length > 0) extractedNames = names;
 			advanceStep(pi, ctx, 3, buildStep3Message());
@@ -311,14 +344,19 @@ export default function (pi: ExtensionAPI) {
 		if (step === 4 && CK_SEARCH_RE.test(cmd)) {
 			if (NO_MATCHES_RE.test(resultText)) {
 				// B1: ck returned no matches — stay on step 4, guide with better query tips
-				let guidance = '⚠️ [Preflight 4/4] Your `ck` query returned no matches. Try a more specific single-term query.';
+				let guidance =
+					"⚠️ [Preflight 4/4] Your `ck` query returned no matches. Try a more specific single-term query.";
 				if (extractedNames.length > 0) {
-					const examples = extractedNames.slice(0, 3).map((n) => `ck "${n}" src/`).join(", ");
+					const examples = extractedNames
+						.slice(0, 3)
+						.map((n) => `ck "${n}" src/`)
+						.join(", ");
 					guidance += ` E.g., ${examples}.`;
 				} else {
 					guidance += ' E.g., `ck "Subscriptions" src/` or `ck "App" src/`.';
 				}
-				guidance += ' Avoid vague multi-word queries like `ck "payment subscription authentication"`.';
+				guidance +=
+					' Avoid vague multi-word queries like `ck "payment subscription authentication"`.';
 
 				pi.sendMessage(
 					{
@@ -335,7 +373,12 @@ export default function (pi: ExtensionAPI) {
 			}
 
 			// Results found — advance to step 5
-			advanceStep(pi, ctx, 5, "✅ [Preflight 4/4] Complete! All search tools are now unblocked. Continue using cx/ck as per AGENTS.md.");
+			advanceStep(
+				pi,
+				ctx,
+				5,
+				"✅ [Preflight 4/4] Complete! All search tools are now unblocked. Continue using cx/ck as per AGENTS.md.",
+			);
 			return;
 		}
 
@@ -344,7 +387,8 @@ export default function (pi: ExtensionAPI) {
 			pi.sendMessage(
 				{
 					customType: "cx-ck-preflight-nudge",
-					content: "💡 Consider using `cx symbols` or `ck` instead of grep/find for better search.",
+					content:
+						"💡 Consider using `cx symbols` or `ck` instead of grep/find for better search.",
 					display: true,
 				},
 				{
@@ -378,7 +422,10 @@ export default function (pi: ExtensionAPI) {
 				if (step >= 5) {
 					ctx.ui.notify("✅ Preflight complete — all tools unblocked", "info");
 				} else {
-					ctx.ui.notify(`⚠️ Preflight step ${step}/4: ${STEP_LABELS[step]}`, "info");
+					ctx.ui.notify(
+						`⚠️ Preflight step ${step}/4: ${STEP_LABELS[step]}`,
+						"info",
+					);
 				}
 			} else {
 				ctx.ui.notify("Usage: /preflight [status|reset|skip]", "info");
