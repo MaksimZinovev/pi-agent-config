@@ -375,7 +375,7 @@ export default function (pi: ExtensionAPI) {
 				overviewInfo = extractOverviewInfo(resultText);
 				advanceStep(pi, ctx, 2, buildStep2Message());
 				return;
-			}
+			} 
 
 			// Step 2→3: cx symbols/references/definition (C2: parse symbol names)
 			// B1-style: don't advance on empty/failed results

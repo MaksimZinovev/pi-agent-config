@@ -2,6 +2,10 @@
 
 Personal [Pi agent](https://github.com/passively/lens) configuration — skills, extensions, settings, and tooling — managed as dotfiles with symlink-based deployment.
 
+## Running Pi from Source with Ollama Cloud
+
+`models.json` must use `https://api.ollama.com/v1` + `$OLLAMA_PI_API_KEY` (not `127.0.0.1`) when running from source — `ollama launch pi` handles auth via local proxy, but direct `node dist/cli.js` hits the cloud directly. Source build also needs `--legacy-peer-deps` patched in `package-manager.ts` to resolve extension peer dep conflicts.
+
 ## Why
 
 - **Version control** — track, diff, and rollback agent config changes
