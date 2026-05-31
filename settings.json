@@ -27,7 +27,6 @@
     "/Users/maksim/.pi/agent/extensions/files.ts",
     "/Users/maksim/.pi/agent/extensions/cx-ck-preflight.ts",
     "/Users/maksim/.pi/agent/extensions/cx-first-reminder.ts",
-    "npm:pi-fancy-footer",
     "npm:@vtstech/pi-status",
     "/Users/maksim/.pi/agent/extensions/hex-edit-steer.ts"
   ],
@@ -65,6 +64,7 @@
     "npm:@vtstech/pi-model-test",
     "npm:@danchamorro/pi-prompt-enhancer",
     "npm:pi-annotate",
+    "npm:pi-fancy-footer",
     "/Users/maksim/.pi/agent/extensions/pi-monitor-reminder/index.ts"
   ],
   "packages": [
@@ -93,11 +93,11 @@
     "npm:@vtstech/pi-long-term-memory",
     "git:github.com/clockless-org/html-anything",
     "../../repos/pi-grump",
-    "git:github.com/samfoy/pi-skill-evolution",
     "npm:pi-session-search",
     "npm:pi-slopchop",
     "git:github.com/jamiemill/layers-skills",
-    "git:github.com/pbakaus/impeccable"
+    "git:github.com/pbakaus/impeccable",
+    "npm:pi-tool-search"
   ],
   "steeringMode": "one-at-a-time",
   "subagents": {

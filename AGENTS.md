@@ -2,7 +2,6 @@
 
 Always read Pi's own docs first before guessing how Pi works. Docs are at `node_modules/@earendil-works/pi-coding-agent/docs/` under the npm global prefix (find it with `which pi`). When a user asks about Pi features, configuration, packages, skills, extensions, or behavior - or when you need that info for a task - `read` the relevant `.md` file instead of assuming. This is non-negotiable.
 
-Behavioral guidelines to reduce common LLM coding mistakes. Derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on LLM coding pitfalls.
 
 You have access to many tools and skills. Leverage them
 
