@@ -1,5 +1,5 @@
 ---
-name: pi-customization
+name: pi-config
 description: Configures pi coding agent with skills, templates, extensions, packages, and models. Use for composable development workflows, custom agents, and project-specific configurations.
 ---
 
@@ -71,8 +71,13 @@ Configure resources in `~/.pi/agent/settings.json` or `.pi/settings.json`.
 
 ## Package Installation
 
+Always before installation
+- read package README
+- check current system and environment
+- stop and ask user before installing - "What is preferred installation method for packages?". And provide recommendation + reasoning; be concise, specific.   
+
 ```bash
-# Install from npm
+# Install from npm (in most cases)
 pi install npm:@foo/bar@1.2.3
 
 # Install from git

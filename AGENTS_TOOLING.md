@@ -2,6 +2,7 @@
 
 Additional tool-specific details. Only read when you need deeper guidance on `cx`/`ck`/`ast_grep` behavior. See `AGENTS.md` for the baseline rules.
 
+
 ## cx internals
 
 - `cx` is auto-warmed at session start via the `cx-cache-warm` extension. `--root` is auto-injected — no need to pass it manually.
@@ -9,6 +10,9 @@ Additional tool-specific details. Only read when you need deeper guidance on `cx
   - `cx overview <dir>` — ~20 tokens (lightweight directory scan)
   - `cx overview <file>` — ~200 tokens (file structure summary)
   - `cx definition --name <name>` — ~500 tokens (full symbol body)
+
+
+
 
 ## cx references
 

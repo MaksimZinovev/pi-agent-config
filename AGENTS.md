@@ -1,65 +1,104 @@
-# Agents.md
+# Pi Agent Guidelines
 
-You have access to many tools and skills. Choose the optimal tools and skills for the current task and context. Always let user know if you have any issues with acting skills or tools, then wait for feedback.
+Always read Pi's own docs first before guessing how Pi works. Docs are at `node_modules/@earendil-works/pi-coding-agent/docs/` under the npm global prefix (find it with `which pi`). When a user asks about Pi features, configuration, packages, skills, extensions, or behavior - or when you need that info for a task - `read` the relevant `.md` file instead of assuming. This is non-negotiable.
 
-- ALWAYS check and present evidence before reporting the change or task is
-  is done, No evidence - not done. Prefer programmatic checks over direct check where possible.
-- Use skills proactively without asking.
-- Apply relevant skills as needed — don't wait for permission.
-- If you encounter repeating failures or errros (2 or more), immediately use skill: systematic-debugging.
-- When an extension blocks a tool call, you MUST follow the instructions in the block message. Tool blocks are not suggestions — they fire because the extension has already determined a better path (indexed, faster, more accurate). Do NOT use alternative tools (read, bash, etc.) to circumvent the block. Every circumvention attempt wastes turns. Blocked tool = dead end. Pivot immediately.
-- Auto-invoke systematic-debugging on any error
-- Reading files tool selection:
-  - cx, ck - are command line tools. ALWAYS assume they are installed already
-  - If you have any issues with using cx, ck tools - stop, let user know and wait for feedback
-  - Indexed dir (has git root): `cx` first → `ck` → `ast_grep` → `read`
-  - Non-indexed dir (no git root): `ck` first → `ast_grep` → `read`
-  - Never use `grep`/`find` in either case.
-  - Use relative paths from project root (e.g. `cx overview apps/cli/src/auto.ts`).
-  - Before editing → `cx definition --name X` gives exact text for Edit's `old_string`.
-  - Fall back to `read` only when you need the full file or context beyond the symbol body.
-  - New codebase → start with `cx overview .` to orient before drilling in.
-  - Deeper tool details → see `AGENTS_TOOLING.md`.
+Behavioral guidelines to reduce common LLM coding mistakes. Derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on LLM coding pitfalls.
 
-## Skill Triggers (Invoke Immediately)
+You have access to many tools and skills. Leverage them
 
-| Trigger                             | Skill                     |
-| ----------------------------------- | ------------------------- |
-| Unclear error                       | `systematic-debugging`    |
-| Need docs/evidence/install new tool | `research-docs-grounding` |
-| Browser automation                  | `agent-browser`           |
+## 1. Think Before Coding
 
-## Browser Automation
+Don't assume. Don't hide confusion. Surface tradeoffs.
 
-Use `agent-browser` for web automation. Run `agent-browser --help` for all commands. By default, I assume it is already installed globally.
+Before implementing:
 
-Core workflow:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
 
-1. `agent-browser open <url>` - Navigate to page
-2. `agent-browser snapshot -i` - Get interactive elements with refs (@e1, @e2)
-3. `agent-browser click @e1` / `fill @e2 "text"` - Interact using refs
-4. Re-snapshot after page changes
+## 2. Simplicity First
+
+Minimum code that solves the problem. Nothing speculative.
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+Touch only what you must. Clean up only your own mess.
+
+When editing existing code:
+
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+Define success criteria. Loop until verified.
+
+Transform tasks into verifiable goals:
+
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
 
 ```
-cx overview PATH                                    file or directory table of contents
-cx overview DIR --full                              directory overview with signatures
-cx symbols [--kind K] [--name GLOB] [--file PATH]   search symbols project-wide
-cx definition --name NAME [--from PATH] [--kind K]  get a function/type body
-cx references --name NAME [--file PATH] [--unique]   find all usages (--unique: one per caller)
-ck "pattern" PATH                                   semantic grep (replaces grep/find)
-ck --sem "concept" PATH                             semantic search
-ck --lex "phrase" PATH                              BM25 full-text search
-ck --hybrid "pattern" PATH                           regex + semantic combined
-cx lang list                                         show supported languages
-cx lang add LANG [LANG...]                           install language grammars
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
 ```
 
-Short aliases: `cx o`, `cx s`, `cx d`, `cx r`
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-Symbol kinds: fn, method, struct, enum, trait, type, const, class, interface, module, event
+---
 
-Check signatures for `pub`/`export` to identify public API without reading the file.
+These guidelines are working if: fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
 
-## Missing grammars
+## Tool & Extension Discovery
 
-If cx reports a missing grammar (e.g. `cx: rust grammar not installed`), install it with `cx lang add rust`. Run `cx lang list` to see what's installed.
+Before installing anything or assuming a tool is missing, check what you already have.
+
+1. Pi extensions ≠ MCP servers — Pi packages (`npm:pi-*`) integrate into Pi's native tool system. MCP servers are separate processes. Use `mcp()` only for MCP servers, not Pi extensions.
+2. Use tools proactively — When a task involves choosing between options, gathering structured input, or presenting decisions, prefer purpose-built tools (like `interview`) over freeform chat.
+
+## Before Installing Anything
+
+Before running `npm install`, `npx`, `pip install`, or any package manager:
+
+1. Review your available tools — You have built-in tools (read, bash, edit, write, web_search, web_fetch, interview, mcp, etc.). If a tool exists in your tool list, use it directly — don't reinstall its package.
+2. Check installed extensions — `ls ~/.pi/agent/extensions/` shows what Pi packages are installed; check `node_modules`, or relevant package files. Packages extend built-in tools; they don't appear as MCP servers.
+3. Avoid duplicate installs — if a package is in `settings.json` → `packages`, it's already loaded. Don't reinstall it.
+4. Check if it's already a tool — review your available tools. Many Pi packages extend built-in tools (e.g., `pi-interview` → `interview` tool).
+
+## Security 
+
+ Pi's security layer intercepts write operation in Pi folder. Do not try to find workaround. Ask user, share comamand to run and explain purpose, risks if any. 
+
+## Environment Map
+
+- Pi config: `~/.pi/agent/` | Pi docs: npm global prefix → `node_modules/@earendil-works/pi-coding-agent/docs/`
+- Pi extensions: `~/.pi/agent/extensions/` | Pi packages: see `settings.json` → `packages`
+- Repos: `~/repos/` | GitHub: MaksimZinovev (gh CLI auth'd) | Default Model: `glm-5.1` via [Ollama Cloud](https://docs.ollama.com/cloud)
+
+## User & Workspace
+
+- Style: concise, casual, beginner-friendly, concrete examples, plain words over abstract terms. Work in small chunks, frequent feedback, wait for permission on major steps.
+- Use `slop-scan scan .` to check JS/TS code for AI slop patterns before finalizing changes.
+- NEVER delete silently content of files, especially code. If you think something should be removed, ask first. If you remove something, mention it explicitly in the file as summary of deletions.
