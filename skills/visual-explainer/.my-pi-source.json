@@ -1,0 +1,13 @@
+{
+	"version": 1,
+	"source": "plugin:visual-explainer@visual-explainer-marketplace",
+	"upstream_skill_path": "/Users/maksim/.claude/plugins/cache/visual-explainer-marketplace/visual-explainer/0.6.3/SKILL.md",
+	"upstream_base_dir": "/Users/maksim/.claude/plugins/cache/visual-explainer-marketplace/visual-explainer/0.6.3",
+	"upstream_install_path": "/Users/maksim/.claude/plugins/cache/visual-explainer-marketplace/visual-explainer/0.6.3",
+	"upstream_version": "0.6.3",
+	"upstream_git_commit_sha": "9a97a5818bebbcb61cccf8941d533b82a1ce958b",
+	"imported_at": "2026-05-09T13:42:08.425Z",
+	"last_synced_at": "2026-05-09T13:42:08.425Z",
+	"imported_hash": "e610fc7a8b65ebbda4b78e3e152d3be8afcef19ce8b64808cbe338a7fcab341e",
+	"upstream_hash": "e610fc7a8b65ebbda4b78e3e152d3be8afcef19ce8b64808cbe338a7fcab341e"
+}

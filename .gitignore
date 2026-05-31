@@ -112,6 +112,7 @@ run-history.jsonl
 **/.venv/
 
 # Local 
+.ck/ 
 .ck 
 .local
 inactive-skills/

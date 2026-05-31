@@ -1,0 +1,254 @@
+#!/usr/bin/env bash
+# Playwright MCP CLI Wrapper
+# Convenient interface for Playwright browser automation and test generation
+
+set -euo pipefail
+
+# Project root detection
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+CLI_BIN="$PROJECT_ROOT/scripts/playwright-mcp-cli.cjs"
+
+# Colors for output
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[0;33m'
+readonly BLUE='\033[0;34m'
+readonly NC='\033[0m' # No Color
+
+# Help function
+show_help() {
+    cat << 'EOF'
+Playwright MCP CLI - Browser Automation & Test Generation
+
+Usage:
+  pw <command> [options]
+
+Core Commands:
+  nav <url>              Navigate to URL
+  snap                   Take accessibility snapshot
+  shot [file]            Take screenshot (optional filename)
+  click <element> <ref>  Click element
+  type <element> <ref> <text>  Type text into element
+  eval <code>            Evaluate JavaScript code
+  code <code>            Run Playwright code snippet
+
+Test Generation Commands:
+  record <tc-id>         Start recording test (generates test with tc-id)
+  stop                   Stop recording and output test code
+  snippet                Output last action as code snippet
+  file <tc-id>           Output full test file
+
+Session Management:
+  close                  Close browser/page
+  tabs [action] [index]  Manage tabs (list, new, close, select)
+
+Other Commands:
+  resize <width> <height> Resize browser window
+  press <key>            Press keyboard key
+  wait [time|text]       Wait for time or text
+  back                   Go back in history
+  console [level]        Get console messages (error|warning|info|debug)
+
+Output Modes:
+  --json, -j             Output as JSON
+  --markdown, -m         Output as markdown
+  --raw, -r              Raw output
+
+Examples:
+  pw nav https://scoolendar.com
+  pw snap
+  pw shot homepage.png
+  pw click "Get Started" e123
+  pw type "Email" e45 "test@example.com"
+  pw eval "document.title"
+  pw record tc-001
+  pw click "Login" e67
+  pw type "Username" e89 "admin"
+  pw stop
+  pw file tc-001
+
+For full MCP tool reference:
+  pw --help
+
+EOF
+}
+
+# Logging functions
+log_info() { echo -e "${BLUE}ℹ${NC} $*"; }
+log_success() { echo -e "${GREEN}✓${NC} $*"; }
+log_error() { echo -e "${RED}✗${NC} $*"; }
+
+# Check if CLI exists
+check_cli() {
+    if [[ ! -f "$CLI_BIN" ]]; then
+        log_error "CLI not found at $CLI_BIN"
+        log_info "Generate it with: npx mcporter generate-cli 'npx -y @playwright/mcp@latest' --name playwright --bundle scripts/playwright-mcp-cli.cjs"
+        exit 1
+    fi
+}
+
+# Recording state
+RECORDING_FILE="$PROJECT_ROOT/.pw-recording"
+TC_ID=""
+ACTIONS=()
+
+# Action recorder
+record_action() {
+    local action_type="$1"
+    shift
+    local action_desc="$*"
+    ACTIONS+=("$action_type|$action_desc")
+    echo "# Recorded: $action_type - $action_desc" >> "$RECORDING_FILE"
+}
+
+start_recording() {
+    TC_ID="$1"
+    : > "$RECORDING_FILE"
+    ACTIONS=()
+    cat > "$RECORDING_FILE" << REC
+// Test: $TC_ID
+// Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+import { test, expect } from '@playwright/test';
+
+test.describe('Recorded test: $TC_ID', () => {
+  test('should $TC_ID', async ({ page }) => {
+REC
+    log_success "Recording started for $TC_ID. Use 'pw stop' to end recording."
+}
+
+stop_recording() {
+    if [[ ! -f "$RECORDING_FILE" ]]; then
+        log_error "No recording in progress"
+        return 1
+    fi
+
+    echo "  });
+});" >> "$RECORDING_FILE"
+    log_success "Recording stopped. Use 'pw file $TC_ID' or 'pw snippet' to view output."
+}
+
+generate_file() {
+    local tc_id="${1:-$TC_ID}"
+    if [[ -z "$tc_id" ]]; then
+        log_error "No test ID specified"
+        return 1
+    fi
+
+    local target_file="$PROJECT_ROOT/tests/recorded/${tc_id}.spec.ts"
+    mkdir -p "$(dirname "$target_file")"
+
+    if [[ -f "$RECORDING_FILE" ]]; then
+        cp "$RECORDING_FILE" "$target_file"
+        log_success "Test file created: $target_file"
+    else
+        log_error "No recording found. Start recording with 'pw record <tc-id>'"
+        return 1
+    fi
+}
+
+show_snippet() {
+    if [[ ! -f "$RECORDING_FILE" ]]; then
+        log_error "No recording found"
+        return 1
+    fi
+    cat "$RECORDING_FILE"
+}
+
+# Parse command
+check_cli
+
+if [[ $# -eq 0 ]] || [[ "$1" == "help" ]] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
+    show_help
+    exit 0
+fi
+
+# Extract global flags
+OUTPUT_MODE=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --json|-j) OUTPUT_MODE="--output json"; shift ;;
+        --markdown|-m) OUTPUT_MODE="--output markdown"; shift ;;
+        --raw|-r) OUTPUT_MODE="--output raw"; shift ;;
+        --*) break ;;
+        *) break ;;
+    esac
+done
+
+COMMAND="$1"
+shift
+
+case "$COMMAND" in
+    nav|navigate)
+        node "$CLI_BIN" $OUTPUT_MODE browser-navigate --url "$1"
+        ;;
+    snap|snapshot)
+        node "$CLI_BIN" $OUTPUT_MODE browser-snapshot "${@:-}"
+        ;;
+    shot|screenshot)
+        if [[ -n "${1:-}" ]]; then
+            node "$CLI_BIN" $OUTPUT_MODE browser-take-screenshot --filename "$1"
+        else
+            node "$CLI_BIN" $OUTPUT_MODE browser-take-screenshot
+        fi
+        ;;
+    click)
+        [[ $# -lt 2 ]] && { log_error "Usage: pw click <element-description> <ref>"; exit 1; }
+        node "$CLI_BIN" $OUTPUT_MODE browser-click --element "$1" --ref "$2"
+        record_action "click" "await page.getByRole('button', { name: '$1' }).click(); // ref: $2"
+        ;;
+    type)
+        [[ $# -lt 3 ]] && { log_error "Usage: pw type <element-description> <ref> <text>"; exit 1; }
+        node "$CLI_BIN" $OUTPUT_MODE browser-type --element "$1" --ref "$2" --text "$3"
+        record_action "type" "await page.getByRole('textbox', { name: '$1' }).fill('$3'); // ref: $2"
+        ;;
+    eval)
+        node "$CLI_BIN" $OUTPUT_MODE browser-evaluate --function "$1"
+        ;;
+    code)
+        node "$CLI_BIN" $OUTPUT_MODE browser-run-code --code "$1"
+        ;;
+    record)
+        start_recording "$1"
+        ;;
+    stop)
+        stop_recording
+        ;;
+    file)
+        generate_file "$1"
+        ;;
+    snippet)
+        show_snippet
+        ;;
+    close)
+        node "$CLI_BIN" $OUTPUT_MODE browser-close
+        ;;
+    tabs)
+        node "$CLI_BIN" $OUTPUT_MODE browser-tabs --action "${1:-list}" ${2:+--index "$2"}
+        ;;
+    resize)
+        [[ $# -lt 2 ]] && { log_error "Usage: pw resize <width> <height>"; exit 1; }
+        node "$CLI_BIN" $OUTPUT_MODE browser-resize --width "$1" --height "$2"
+        ;;
+    press)
+        node "$CLI_BIN" $OUTPUT_MODE browser-press-key --key "$1"
+        ;;
+    wait)
+        if [[ "$1" =~ ^[0-9]+$ ]]; then
+            node "$CLI_BIN" $OUTPUT_MODE browser-wait-for --time "$1"
+        else
+            node "$CLI_BIN" $OUTPUT_MODE browser-wait-for --text "$1"
+        fi
+        ;;
+    back)
+        node "$CLI_BIN" $OUTPUT_MODE browser-navigate-back
+        ;;
+    console)
+        node "$CLI_BIN" $OUTPUT_MODE browser-console-messages --level "${1:-info}"
+        ;;
+    *)
+        # Pass through to CLI directly
+        node "$CLI_BIN" "$COMMAND" "${@}"
+        ;;
+esac

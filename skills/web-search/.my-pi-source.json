@@ -1,0 +1,13 @@
+{
+	"version": 1,
+	"source": "plugin:brave-search-skills@brave-search",
+	"upstream_skill_path": "/Users/maksim/.claude/plugins/cache/brave-search/brave-search-skills/2827ed3c4e51/skills/web-search/SKILL.md",
+	"upstream_base_dir": "/Users/maksim/.claude/plugins/cache/brave-search/brave-search-skills/2827ed3c4e51/skills/web-search",
+	"upstream_install_path": "/Users/maksim/.claude/plugins/cache/brave-search/brave-search-skills/2827ed3c4e51",
+	"upstream_version": "2827ed3c4e51",
+	"upstream_git_commit_sha": "2827ed3c4e51e02e31c538d1d11695d4e245e2b3",
+	"imported_at": "2026-05-09T13:42:08.431Z",
+	"last_synced_at": "2026-05-09T13:42:08.431Z",
+	"imported_hash": "b17a1e5097ca39e68f9051a5c881774143d781ae417e98fdcb6516c2287133d7",
+	"upstream_hash": "b17a1e5097ca39e68f9051a5c881774143d781ae417e98fdcb6516c2287133d7"
+}

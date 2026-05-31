@@ -1,0 +1,13 @@
+{
+	"version": 1,
+	"source": "plugin:chrome-devtools-mcp@chrome-devtools-plugins",
+	"upstream_skill_path": "/Users/maksim/.claude/plugins/cache/chrome-devtools-plugins/chrome-devtools-mcp/latest/skills/chrome-devtools/SKILL.md",
+	"upstream_base_dir": "/Users/maksim/.claude/plugins/cache/chrome-devtools-plugins/chrome-devtools-mcp/latest/skills/chrome-devtools",
+	"upstream_install_path": "/Users/maksim/.claude/plugins/cache/chrome-devtools-plugins/chrome-devtools-mcp/latest",
+	"upstream_version": "latest",
+	"upstream_git_commit_sha": "5cedcaad2c8a5e488064e21fb56cbd8643345440",
+	"imported_at": "2026-05-09T13:42:08.356Z",
+	"last_synced_at": "2026-05-09T13:42:08.356Z",
+	"imported_hash": "70610ba00263d15c8baf6098fdbae66812fe79bafd1d5848402868639c61a8f6",
+	"upstream_hash": "70610ba00263d15c8baf6098fdbae66812fe79bafd1d5848402868639c61a8f6"
+}

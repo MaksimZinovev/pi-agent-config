@@ -1,6 +1,6 @@
 ---
 name: inspect
-description: Entity-level code review for Git. Triage PRs by structural risk (classification, blast radius, dependency depth), not line count. Scores changes from 0.0-1.0 and groups by logical dependency. CLI + MCP server. Use when reviewing PRs, triaging changes, or finding high-risk entities before LLM review. Triggers: "review PR", "check changes risk", "find critical changes", "inspect diff".
+description: Entity-level code review for Git. Triage PRs by structural risk (classification, blast radius, dependency depth), not line count. Scores changes from 0.0-1.0 and groups by logical dependency. CLI + MCP server. Use when reviewing PRs, triaging changes, or finding high-risk entities before LLM review. Triggers- "review PR", "check changes risk", "find critical changes", "inspect diff".
 ---
 
 # inspect — Entity-Level Code Review

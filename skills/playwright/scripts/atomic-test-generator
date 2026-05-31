@@ -1,0 +1,229 @@
+#!/usr/bin/env node
+
+/**
+ * Atomic Test Generator for Playwright
+ *
+ * Generates atomic test templates following the one-action-per-test principle
+ * with proper test.step() structure for Setup/Action/Verification phases.
+ *
+ * Usage:
+ *   ./atomic-test-generator --feature login --action "user authentication" --count 3
+ *   ./atomic-test-generator -f navigation -a "menu navigation" -c 2
+ *   ./atomic-test-generator --help
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+// ANSI color codes for better output
+const colors = {
+  reset: '\x1b[0m',
+  green: '\x1b[32m',
+  blue: '\x1b[34m',
+  yellow: '\x1b[33m',
+  red: '\x1b[31m',
+  cyan: '\x1b[36m'
+};
+
+// Template for atomic test structure
+const ATOMIC_TEST_TEMPLATE = (featureName, testName, testId) => `import { test, expect } from '@playwright/test';
+
+test.describe('${featureName}', () => {
+  test('should ${testName} tc-${testId.toString().padStart(3, '0')}', async ({ page }) => {
+    await test.step('Setup: Navigate to page', async () => {
+      await page.goto('https://example.com');
+    });
+
+    await test.step('Action: Perform user interaction', async () => {
+      // TODO: Add specific interaction for ${testName}
+      // Example: await page.getByRole('button', { name: '...' }).click();
+    });
+
+    await test.step('Verification: Check expected result', async () => {
+      // TODO: Add specific assertion
+      // Example: await expect(page).toHaveURL(/expected-page/);
+    });
+  });
+});
+`;
+
+// Help documentation
+const HELP_TEXT = `
+${colors.cyan}Atomic Test Generator for Playwright${colors.reset}
+
+${colors.yellow}Description:${colors.reset}
+  Generates atomic test templates following the one-action-per-test principle
+  with proper test.step() structure for Setup/Action/Verification phases.
+
+${colors.yellow}Usage:${colors.reset}
+  ./atomic-test-generator --feature <name> --action <description> [--count <number>] [--output <dir>]
+  ./atomic-test-generator -f <name> -a <description> [-c <number>] [-o <dir>]
+
+${colors.yellow}Arguments:${colors.reset}
+  -f, --feature <name>      Feature area name (required)
+  -a, --action <description> Action description for test case (required)
+  -c, --count <number>      Number of test cases to generate (default: 1)
+  -o, --output <dir>        Output directory (default: current directory)
+  -h, --help               Show this help message
+
+${colors.yellow}Examples:${colors.reset}
+  ${colors.green}# Generate single test${colors.reset}
+  ./atomic-test-generator --feature login --action "user authentication"
+
+  ${colors.green}# Generate multiple tests${colors.reset}
+  ./atomic-test-generator -f navigation -a "menu navigation" -c 3
+
+  ${colors.green}# Generate tests in specific directory${colors.reset}
+  ./atomic-test-generator --feature search --action "product search" --count 2 --output ./tests/search
+
+${colors.yellow}Generated Test Structure:${colors.reset}
+  - Follows atomic testing principles (one action per test)
+  - Uses test.step() organization for Setup/Action/Verification
+  - Auto-generates test case IDs (tc-001, tc-002, etc.)
+  - Creates files with naming convention: feature-action.spec.ts
+
+${colors.yellow}File Naming:${colors.reset}
+  Files are named using the pattern: <feature>-<action>.spec.ts
+  Spaces and special characters are converted to hyphens for valid filenames.
+`;
+
+class AtomicTestGenerator {
+  constructor() {
+    this.args = this.parseArguments();
+    this.featureName = '';
+    this.actionDescription = '';
+    this.testCount = 1;
+    this.outputDir = './';
+  }
+
+  parseArguments() {
+    const args = process.argv.slice(2);
+
+    if (args.includes('--help') || args.includes('-h')) {
+      this.showHelp();
+      process.exit(0);
+    }
+
+    const parsedArgs = {};
+
+    for (let i = 0; i < args.length; i++) {
+      const arg = args[i];
+      const nextArg = args[i + 1];
+
+      switch (arg) {
+        case '--feature':
+        case '-f':
+          if (!nextArg) this.error('Feature name is required');
+          parsedArgs.feature = nextArg;
+          i++;
+          break;
+        case '--action':
+        case '-a':
+          if (!nextArg) this.error('Action description is required');
+          parsedArgs.action = nextArg;
+          i++;
+          break;
+        case '--count':
+        case '-c':
+          if (!nextArg) this.error('Count is required');
+          const count = parseInt(nextArg, 10);
+          if (isNaN(count) || count < 1) this.error('Count must be a positive number');
+          parsedArgs.count = count;
+          i++;
+          break;
+        case '--output':
+        case '-o':
+          if (!nextArg) this.error('Output directory is required');
+          parsedArgs.output = nextArg;
+          i++;
+          break;
+        default:
+          if (arg.startsWith('-')) {
+            this.error(`Unknown option: ${arg}`);
+          }
+      }
+    }
+
+    if (!parsedArgs.feature) this.error('Feature name is required. Use --help for usage information.');
+    if (!parsedArgs.action) this.error('Action description is required. Use --help for usage information.');
+
+    return parsedArgs;
+  }
+
+  sanitizeFilename(name) {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  generateTests() {
+    this.featureName = this.args.feature;
+    this.actionDescription = this.args.action;
+    this.testCount = this.args.count || 1;
+    this.outputDir = this.args.output || './';
+
+    // Create output directory if it doesn't exist
+    if (!fs.existsSync(this.outputDir)) {
+      fs.mkdirSync(this.outputDir, { recursive: true });
+      console.log(`${colors.blue}Created directory: ${this.outputDir}${colors.reset}`);
+    }
+
+    const baseFilename = `${this.sanitizeFilename(this.featureName)}-${this.sanitizeFilename(this.actionDescription)}`;
+
+    console.log(`${colors.cyan}Generating ${this.testCount} atomic test(s)...${colors.reset}`);
+    console.log(`${colors.yellow}Feature: ${this.featureName}${colors.reset}`);
+    console.log(`${colors.yellow}Action: ${this.actionDescription}${colors.reset}`);
+    console.log(`${colors.yellow}Output Directory: ${this.outputDir}${colors.reset}\n`);
+
+    for (let i = 1; i <= this.testCount; i++) {
+      const testId = i;
+      const testName = this.actionDescription;
+      const filename = this.testCount === 1 ?
+        `${baseFilename}.spec.ts` :
+        `${baseFilename}-${i}.spec.ts`;
+
+      const filePath = path.join(this.outputDir, filename);
+      const testContent = ATOMIC_TEST_TEMPLATE(this.featureName, testName, testId);
+
+      try {
+        fs.writeFileSync(filePath, testContent);
+        console.log(`${colors.green}✓ Generated: ${filename}${colors.reset}`);
+      } catch (error) {
+        this.error(`Failed to write file ${filename}: ${error.message}`);
+      }
+    }
+
+    console.log(`\n${colors.green}Successfully generated ${this.testCount} atomic test template(s)!${colors.reset}`);
+    console.log(`${colors.cyan}Next steps:${colors.reset}`);
+    console.log(`1. Open the generated test file(s)`);
+    console.log(`2. Update the page.goto() URL to your target application`);
+    console.log(`3. Replace TODO comments with actual test implementation`);
+    console.log(`4. Add specific assertions for your test scenario`);
+  }
+
+  showHelp() {
+    console.log(HELP_TEXT);
+  }
+
+  error(message) {
+    console.error(`${colors.red}Error: ${message}${colors.reset}`);
+    console.error(`${colors.yellow}Use --help for usage information.${colors.reset}`);
+    process.exit(1);
+  }
+}
+
+// Run the generator if this script is executed directly
+if (require.main === module) {
+  try {
+    const generator = new AtomicTestGenerator();
+    generator.generateTests();
+  } catch (error) {
+    console.error(`${colors.red}Unexpected error: ${error.message}${colors.reset}`);
+    process.exit(1);
+  }
+}
+
+module.exports = AtomicTestGenerator;
