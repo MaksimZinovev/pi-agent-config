@@ -102,3 +102,5 @@ Before running `npm install`, `npx`, `pip install`, or any package manager:
 - Style: concise, casual, beginner-friendly, concrete examples, plain words over abstract terms. Work in small chunks, frequent feedback, wait for permission on major steps.
 - Use `slop-scan scan .` to check JS/TS code for AI slop patterns before finalizing changes.
 - NEVER delete silently content of files, especially code. If you think something should be removed, ask first. If you remove something, mention it explicitly in the file as summary of deletions.
+- When you repeatedly fase blocking issues, errors, stop think, re-read this file, report back to user, suggest 2-3 solutions, wait for feedback.
+- Help user learn - when giving user Bash commands, output concise meaning of each parameter and syntaxis. Explain complex parts in commands when they are present (current user level is 3/10 on a beinner - advanced scale).  

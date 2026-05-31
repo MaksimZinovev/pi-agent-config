@@ -4,28 +4,31 @@
     "keepRecentTokens": 12000,
     "reserveTokens": 8000
   },
-  "defaultModel": "glm-5.1:cloud",
+  "powerline": {
+    "preset": "full"
+  },
+  "workingVibe": "star trek",
+  "workingVibeModel": "ollama/gemma4:31b-cloud",
+  "defaultModel": "minimax-m2.7:cloud",
   "defaultProvider": "ollama",
   "defaultThinkingLevel": "medium",
-  "disabledExtensions": [
-    "npm:taskplane",
-    "npm:pi-subagents",
-    "/Users/maksim/.pi/agent/extensions/answer.ts",
-    "npm:pi-powerline-footer",
-    "/Users/maksim/.pi/agent/extensions/pi-monitor-reminder/index.ts"
-  ],
   "enabledModels": [
     "ollama/glm-5.1:cloud",
     "ollama/minimax-m2.7:cloud",
     "ollama/minimax-m2.7:cloud",
+    "ollama/deepseek-v4-pro:cloud",
     "ollama/kimi-k2.5:cloud",
-    "ollama/minimax-m2.7:cloud"
+    "ollama/minimax-m2.7:cloud",
+    "ollama/deepseek-v4-flash:cloud",
+    "ollama/gemini-3-flash-preview:cloud"
   ],
   "extensions": [
     "/Users/maksim/.pi/agent/extensions/prune-large-toolresults.ts",
     "/Users/maksim/.pi/agent/extensions/files.ts",
     "/Users/maksim/.pi/agent/extensions/cx-ck-preflight.ts",
     "/Users/maksim/.pi/agent/extensions/cx-first-reminder.ts",
+    "npm:pi-fancy-footer",
+    "npm:@vtstech/pi-status",
     "/Users/maksim/.pi/agent/extensions/hex-edit-steer.ts"
   ],
   "hideThinkingBlock": false,
@@ -34,7 +37,7 @@
       {
         "hooks": [
           {
-            "command": "printf '%s' '\u26a0\ufe0f [DEEPWIKI WORKFLOW] Before deepwiki_ask_question: 1) deepwiki_read_wiki_structure first (verifies indexing) 2) deepwiki_read_wiki_contents for docs 3) Fallback: gh api if repo unindexed.'",
+            "command": "printf '%s' '⚠️ [DEEPWIKI WORKFLOW] Before deepwiki_ask_question: 1) deepwiki_read_wiki_structure first (verifies indexing) 2) deepwiki_read_wiki_contents for docs 3) Fallback: gh api if repo unindexed.'",
             "if": "mcp(*deepwiki*)",
             "type": "command"
           },
@@ -49,9 +52,24 @@
     ]
   },
   "lastChangelogVersion": "0.74.0",
+  "disabledExtensions": [
+    "npm:taskplane",
+    "npm:pi-promptsmith",
+    "/Users/maksim/.pi/agent/extensions/answer.ts",
+    "npm:@vtstech/pi-security",
+    "npm:pi-prompt-template-model",
+    "npm:pi-boomerang",
+    "npm:pi-side-chat",
+    "npm:pi-studio",
+    "npm:@spences10/pi-skills",
+    "npm:@vtstech/pi-model-test",
+    "npm:@danchamorro/pi-prompt-enhancer",
+    "npm:pi-annotate",
+    "/Users/maksim/.pi/agent/extensions/pi-monitor-reminder/index.ts"
+  ],
   "packages": [
     "npm:pi-lens",
-    "npm:@lnittman/pi-interview",
+    "npm:pi-powerline-footer",
     "npm:pi-mcp-adapter",
     "npm:pi-interview",
     "npm:pi-tool-display",
@@ -60,25 +78,26 @@
     "npm:@hsingjui/pi-hooks",
     "npm:pi-teams",
     "npm:@ollama/pi-web-search",
-    "npm:pi-prompt-template-model",
-    "npm:pi-boomerang",
     "npm:pi-rewind-hook",
     "npm:pi-review-loop",
-    "npm:pi-side-chat",
     "npm:pi-models",
-    "npm:pi-promptsmith",
-    "npm:@danchamorro/pi-prompt-enhancer",
     "npm:pi-design-deck",
-    "npm:pi-studio",
     "git:github.com/victor-software-house/pi-curated-themes",
-    "npm:pi-annotate",
     "npm:pi-monitor",
     "npm:glimpseui",
-    "npm:pi-fancy-footer",
-    "npm:@spences10/pi-skills",
     "npm:@vanillagreen/pi-skills-manager",
     "npm:pi-subagents",
-    "npm:@vtstech/pi-hex-edit"
+    "npm:@vtstech/pi-hex-edit",
+    "npm:@vtstech/pi-diag",
+    "npm:@vtstech/pi-soul",
+    "npm:@vtstech/pi-long-term-memory",
+    "git:github.com/clockless-org/html-anything",
+    "../../repos/pi-grump",
+    "git:github.com/samfoy/pi-skill-evolution",
+    "npm:pi-session-search",
+    "npm:pi-slopchop",
+    "git:github.com/jamiemill/layers-skills",
+    "git:github.com/pbakaus/impeccable"
   ],
   "steeringMode": "one-at-a-time",
   "subagents": {
