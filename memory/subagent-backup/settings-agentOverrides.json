@@ -1,0 +1,39 @@
+{
+  "agentOverrides": {
+    "context-builder": {
+      "model": "ollama/gemini-3-flash-preview:cloud"
+    },
+    "oracle": {
+      "model": "ollama/minimax-m2.7:cloud"
+    },
+    "planner": {
+      "model": "ollama/glm-5.1:cloud"
+    },
+    "researcher": {
+      "fallbackModels": [
+        "ollama/glm-5.1:cloud"
+      ],
+      "inheritSkills": true,
+      "model": "ollama/minimax-m2.7:cloud",
+      "skills": [
+        "github-cli",
+        "research-docs-grounding",
+        "ck",
+        "cli-tool-discovery"
+      ]
+    },
+    "reviewer": {
+      "model": "ollama/glm-5.1:cloud"
+    },
+    "scout": {
+      "fallbackModels": [
+        "ollama/glm-5.1:cloud"
+      ],
+      "inheritSkills": true,
+      "model": "ollama/minimax-m2.7:cloud"
+    },
+    "worker": {
+      "model": "ollama/minimax-m2.7:cloud"
+    }
+  }
+}

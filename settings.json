@@ -36,7 +36,7 @@
       {
         "hooks": [
           {
-            "command": "printf '%s' '\u26a0\ufe0f [DEEPWIKI WORKFLOW] Before deepwiki_ask_question: 1) deepwiki_read_wiki_structure first (verifies indexing) 2) deepwiki_read_wiki_contents for docs 3) Fallback: gh api if repo unindexed.'",
+            "command": "printf '%s' '⚠️ [DEEPWIKI WORKFLOW] Before deepwiki_ask_question: 1) deepwiki_read_wiki_structure first (verifies indexing) 2) deepwiki_read_wiki_contents for docs 3) Fallback: gh api if repo unindexed.'",
             "if": "mcp(*deepwiki*)",
             "type": "command"
           },
@@ -53,7 +53,6 @@
   "lastChangelogVersion": "0.74.0",
   "packages": [
     "npm:pi-lens",
-
     "npm:pi-mcp-adapter",
     "npm:pi-interview",
     "npm:pi-tool-display",
@@ -65,11 +64,12 @@
     "npm:pi-monitor",
     "npm:glimpseui",
     "npm:@vanillagreen/pi-skills-manager",
-    "npm:pi-subagents",
     "npm:@vtstech/pi-hex-edit",
     "npm:@vtstech/pi-diag",
     "npm:@vtstech/pi-long-term-memory",
-    "npm:pi-session-search"
+    "npm:pi-session-search",
+    "npm:pi-system-prompt",
+    "npm:@gotgenes/pi-subagents"
   ],
   "steeringMode": "one-at-a-time",
   "subagents": {
@@ -84,7 +84,9 @@
         "model": "ollama/glm-5.1:cloud"
       },
       "researcher": {
-        "fallbackModels": ["ollama/glm-5.1:cloud"],
+        "fallbackModels": [
+          "ollama/glm-5.1:cloud"
+        ],
         "inheritSkills": true,
         "model": "ollama/minimax-m2.7:cloud",
         "skills": [
@@ -98,7 +100,9 @@
         "model": "ollama/glm-5.1:cloud"
       },
       "scout": {
-        "fallbackModels": ["ollama/glm-5.1:cloud"],
+        "fallbackModels": [
+          "ollama/glm-5.1:cloud"
+        ],
         "inheritSkills": true,
         "model": "ollama/minimax-m2.7:cloud"
       },
