@@ -9,7 +9,7 @@
   },
   "workingVibe": "star trek",
   "workingVibeModel": "ollama/gemma4:31b-cloud",
-  "defaultModel": "minimax-m2.7:cloud",
+  "defaultModel": "glm-5.1:cloud",
   "defaultProvider": "ollama",
   "defaultThinkingLevel": "medium",
   "enabledModels": [
@@ -25,7 +25,7 @@
   "extensions": [
     "/Users/maksim/.pi/agent/extensions/prune-large-toolresults.ts",
     "/Users/maksim/.pi/agent/extensions/files.ts",
-    "/Users/maksim/.pi/agent/extensions/cx-ck-preflight.ts",
+    "!/Users/maksim/.pi/agent/extensions/cx-ck-preflight.ts",
     "/Users/maksim/.pi/agent/extensions/cx-first-reminder.ts",
     "npm:@vtstech/pi-status",
     "/Users/maksim/.pi/agent/extensions/hex-edit-steer.ts"
@@ -36,7 +36,7 @@
       {
         "hooks": [
           {
-            "command": "printf '%s' '⚠️ [DEEPWIKI WORKFLOW] Before deepwiki_ask_question: 1) deepwiki_read_wiki_structure first (verifies indexing) 2) deepwiki_read_wiki_contents for docs 3) Fallback: gh api if repo unindexed.'",
+            "command": "printf '%s' '\u26a0\ufe0f [DEEPWIKI WORKFLOW] Before deepwiki_ask_question: 1) deepwiki_read_wiki_structure first (verifies indexing) 2) deepwiki_read_wiki_contents for docs 3) Fallback: gh api if repo unindexed.'",
             "if": "mcp(*deepwiki*)",
             "type": "command"
           },
@@ -51,22 +51,6 @@
     ]
   },
   "lastChangelogVersion": "0.74.0",
-  "disabledExtensions": [
-    "npm:taskplane",
-    "npm:pi-promptsmith",
-    "/Users/maksim/.pi/agent/extensions/answer.ts",
-    "npm:@vtstech/pi-security",
-    "npm:pi-prompt-template-model",
-    "npm:pi-boomerang",
-    "npm:pi-side-chat",
-    "npm:pi-studio",
-    "npm:@spences10/pi-skills",
-    "npm:@vtstech/pi-model-test",
-    "npm:@danchamorro/pi-prompt-enhancer",
-    "npm:pi-annotate",
-    "npm:pi-fancy-footer",
-    "/Users/maksim/.pi/agent/extensions/pi-monitor-reminder/index.ts"
-  ],
   "packages": [
     "npm:pi-lens",
     "npm:pi-powerline-footer",
@@ -76,12 +60,7 @@
     "npm:pi-rtk-optimizer",
     "npm:pi-permission-system",
     "npm:@hsingjui/pi-hooks",
-    "npm:pi-teams",
     "npm:@ollama/pi-web-search",
-    "npm:pi-rewind-hook",
-    "npm:pi-review-loop",
-    "npm:pi-models",
-    "npm:pi-design-deck",
     "git:github.com/victor-software-house/pi-curated-themes",
     "npm:pi-monitor",
     "npm:glimpseui",
@@ -89,15 +68,13 @@
     "npm:pi-subagents",
     "npm:@vtstech/pi-hex-edit",
     "npm:@vtstech/pi-diag",
-    "npm:@vtstech/pi-soul",
     "npm:@vtstech/pi-long-term-memory",
     "git:github.com/clockless-org/html-anything",
     "../../repos/pi-grump",
     "npm:pi-session-search",
     "npm:pi-slopchop",
     "git:github.com/jamiemill/layers-skills",
-    "git:github.com/pbakaus/impeccable",
-    "npm:pi-tool-search"
+    "git:github.com/pbakaus/impeccable"
   ],
   "steeringMode": "one-at-a-time",
   "subagents": {

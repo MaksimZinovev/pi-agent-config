@@ -19,7 +19,16 @@ Extensions are TypeScript modules that extend pi's behavior. They subscribe to l
  transitions not firing."
  7. Test output format before parsing — extractResultText assumed event.result existed. event.content is
  (TextContent|ImageContent)[], not {content: [...]}.
-
+ 8. **`directTools: true` + `lifecycle: "lazy"` is contradictory** — `directTools: true` injects all tool
+ schemas into every LLM turn but `lifecycle: "lazy"` means the server doesn't start until first call, so
+ schemas can't be fetched. Use `directTools: true` only with `lifecycle: "eager"`. For lazy
+ servers, omit `directTools` — tools appear via the `mcp` gateway after first call. Prefer `lifecycle: "lazy"`
+ for all MCP servers unless you need zero-latency first call.
+ 9. **Stale MCP cache inflates every turn** — `~/.pi/agent/mcp-cache.json` is global. When you remove a
+ server from `mcp.json`, its cached schemas persist. CircleCI left 57KB of stale schemas. Clean the
+ cache after removing servers. Project-level servers (`.pi/mcp.json`) also write to this global cache.
+ 10. **`disabledExtensions` is a dead key** — Pi runtime doesn't read it. To disable packages, remove them
+ from `packages` array. To disable local extensions, use `!` prefix: `"!/path/to/ext.ts"`.
 
 ## Extension API
 

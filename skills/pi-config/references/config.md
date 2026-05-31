@@ -180,3 +180,7 @@ Pi uses `pi-mcp-adapter` to manage MCP servers. It reads configs in this precede
 5. **Dead token in .mcp.json?** Project `.mcp.json` (priority 3) overrides global `~/.pi/agent/mcp.json` (priority 2). A revoked token in project config will silently break the server even if global has a valid one. Remove dead entries or use `.pi/mcp.json` (priority 4) to override.
 
 See [REFERENCE.md](REFERENCE.md) for complete configuration reference.
+
+## MCP Tool Bloat
+
+MCP server tool schemas can consume significant context window (50-100KB+). For audit data, stale cache cleanup, and per-server lifecycle tuning (`directTools`, `lifecycle`), see [mcp-tool-bloat.md](../../../memory/mcp-tool-bloat.md).

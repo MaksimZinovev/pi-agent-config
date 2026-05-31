@@ -114,3 +114,6 @@ run-history.jsonl
 # Local 
 .ck 
 .local
+inactive-skills/
+inactive-extensions.json
+.pi/
