@@ -2,9 +2,17 @@
 
 ## Quick Deploy
 
+Use this example as defaul. Adjust current branch as needed. ALWAYS share with user and ask for confirmation before running command.
 ```bash
 # Deploy to development environment
-forge deploy --environment development
+```bash
+  gh workflow run deploy-forge.yml \
+    --ref issues/24-improve-ui-ux-jira-issue-panel \
+    --field environment=development \
+    --field license=None \
+    --field site=automatify-dev.atlassian.net \
+    --field reset_install=false
+```
 
 # Tunnel for local development
 forge tunnel

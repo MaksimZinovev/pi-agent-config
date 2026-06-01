@@ -69,7 +69,8 @@
     "npm:@vtstech/pi-long-term-memory",
     "npm:pi-session-search",
     "npm:pi-system-prompt",
-    "npm:@gotgenes/pi-subagents"
+    "npm:@gotgenes/pi-subagents",
+    "npm:@gotgenes/pi-autoformat"
   ],
   "steeringMode": "one-at-a-time",
   "subagents": {

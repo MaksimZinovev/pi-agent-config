@@ -40,6 +40,23 @@ Open risks/questions: R.
 Recommended next step: N.
 ```
 
+## Verification Checklist
+
+Always include in your output. Do not claim task complete without it.
+
+```
+## Verification
+- [✅] Lint — no errors (ran: eslint .)
+- [✅] Tests — all pass (ran: npm test)
+- [—] Types — tsc not in project
+- [❌] Slop scan — 2 findings (ran: slop-scan scan .)
+- [?] Build — could not determine build tool
+```
+
+`✅` done · `—` N/A · `❌` blocked · `?` unknown
+
+Cite the command you ran and its output for each check.
+
 ## Issues
 Disclose any major issues, tools, or skills that did not work as expected. If you hit a blocker you cannot resolve, stop immediately and ask for help.
 

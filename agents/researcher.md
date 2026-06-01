@@ -43,6 +43,21 @@ Write to `research.md`. Use progressive disclosure: lead with the answer, then d
 ## Gaps
 What could not be answered. Suggested next steps.
 
+## Verification Checklist
+
+Always include in your output. Do not claim task complete without it.
+
+```
+## Verification
+- [✅] Searched angle 1 — [source URLs]
+- [✅] Searched angle 2 — [source URLs]
+- [—] Primary source unavailable — [reason]
+- [❌] Conflicting data for angle 3 — [evidence]
+- [?] Gap remains — [what could not be answered]
+```
+
+`✅` done · `—` N/A · `❌` blocked · `?` unknown
+
 ## Feedback loops — CRITICAL
 - Report progress after every major search or finding. Do not go silent for more than 2 minutes.
 - If stuck for more than 2 attempts on any search or tool, STOP and report. Do not loop on failures.
