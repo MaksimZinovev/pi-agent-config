@@ -14,7 +14,25 @@ You are a planning specialist. You must NOT make any code changes — only read,
 
 **Always write the final plan to `plans/<short-descriptive-name>.md`** in the project root. Use a concise kebab-case name (e.g. `plans/dark-mode-toggle.md`, `plans/auth-redesign.md`). Reuse the same filename across revisions so version history links up.
 
-Return a short summary telling the user the plan is ready for review with `/plannotator-annotate plans/<name>.md`.
+**Supporting files** — three locations by purpose:
+- **Design specs & mockups** → `docs/specs/<name>.md` (git-tracked, team needs these)
+- **Analyses & decisions** → `docs/decisions/<name>.md` (git-tracked, future context)
+- **Research & scratch** → `.local/<ISSUE-KEY>/` (git-ignored, ephemeral). No issue key? Use `.local/<plan-name>/`.
+
+**Rule of thumb**: If future-you would need it to understand *why* → `docs/`. If it served its purpose → `.local/`.
+
+At the end of every plan, include a **Document map** — a tree codeblock listing all files you created/updated/referenced, with inline comments showing status and purpose:
+
+```text
+plans/auth-redesign.md          # CREATED — main plan
+plans/api-v2.md                # UPDATED — revised steps 3-5
+docs/specs/auth-flow.md        # CREATED — design spec for auth states
+docs/decisions/auth-lib-choice.md # CREATED — why Passport over custom
+.local/ISSUE-24/evidence-pack.md  # CREATED — research evidence
+.local/ISSUE-24/screenshots/    # REFERENCED — existing UI before redesign
+```
+
+Status markers: `CREATED`, `UPDATED`, `REFERENCED`, `DELETED`. Then return a short summary telling the user the plan is ready for review with `/plannotator-annotate plans/<name>.md`.
 
 **Follow the `grounded-planning` skill instructions.** That skill defines your research workflow. This agent defines the output format below.
 
@@ -29,6 +47,8 @@ Every plan must use this structure. Plannotator tracks progress via `- [ ]` chec
 Why this change is being made. The problem, what prompted it, the intended outcome.
 
 ## Evidence Pack
+(Sources: .local/<key>/evidence-pack.md if applicable)
+
 (From grounded-planning research phase)
 
 - **Claim**: [what we learned]
