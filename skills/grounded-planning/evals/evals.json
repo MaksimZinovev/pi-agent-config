@@ -1,0 +1,23 @@
+{
+  "skill_name": "grounded-planning",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to add authentication middleware to my Express.js app. It currently has no auth and I'm not sure which approach fits best — JWT sessions, session cookies, or OAuth. Help me plan this out.",
+      "expected_output": "A Grounded Plan with evidence from Context7 (Express docs), web search (auth approaches comparison), and possibly DeepWiki (if relevant). Each plan step should cite its evidence source. Should classify this as medium uncertainty.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I'm getting a weird error: 'TypeError: Cannot read properties of undefined (reading \"map\")' in my React component after upgrading to React 19. Can you figure out what's going on and plan a fix?",
+      "expected_output": "Evidence Pack citing Context7 (React 19 migration docs), web search (the specific error), and GitHub issues. Then a Grounded Plan for the fix with cited evidence. Should classify as medium-high uncertainty given the version change.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Help me plan a CI pipeline for my monorepo that has a Python backend, React frontend, and shared TypeScript SDK. I need it to run tests, build, and deploy to staging.",
+      "expected_output": "A Grounded Plan with evidence from local CircleCI docs (if available), Context7 (CI config patterns), and web search (monorepo CI best practices). Should classify as medium uncertainty — routine pattern but needs specific config details.",
+      "files": []
+    }
+  ]
+}

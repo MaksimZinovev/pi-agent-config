@@ -1,0 +1,31 @@
+{
+  "skill_name": "grounded-planning",
+  "version": 2,
+  "note": "Real tasks drawn from session history, not synthetic",
+  "evals": [
+    {
+      "id": 1,
+      "name": "fusion-extension-eval",
+      "prompt": "I'm considering installing @runfusion/fusion as a Pi extension. Explore the GitHub repo (https://github.com/Runfusion/Fusion), estimate the actual system prompt token cost, and assess the bloat:benefit ratio. Should I install it? Give me evidence, not guesses.",
+      "expected_output": "Evidence Pack with claims sourced from the repo (README, package.json, source files), possibly web search for community feedback. Grounded Plan with clear install/don't-install decision. Should classify as medium uncertainty.",
+      "real_session": "019e87f5-7d4f-7648-8a5a-1af4c0a774a7",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "nocodb-vs-teable",
+      "prompt": "I need to set up a self-hosted project tracker for a 2-person team. NocoDB and Teable are both options. Research both and help me decide which to use — I care about: easy local Docker setup, real-time collaboration, and free tier features. Don't just guess — give me evidence for each claim.",
+      "expected_output": "Evidence Pack comparing NocoDB and Teable across the 3 criteria. Grounded Plan with a clear recommendation. Should classify as high uncertainty (comparing tools requires multiple sources).",
+      "real_session": "0811cfd4-e2ab-4de5-bb1f-cd77e8721583",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "jira-forge-pricing",
+      "prompt": "I'm building a Jira Forge app and need to understand the pricing and cost model. What are the Forge infrastructure costs, Atlassian marketplace fees, and free tier limits? I need facts, not assumptions — this affects our business model.",
+      "expected_output": "Evidence Pack citing Atlassian docs (Context7 or web), marketplace terms, and Forge pricing page. Grounded Plan with cost estimates. Should classify as medium uncertainty — docs exist but are scattered.",
+      "real_session": "80c26f05-9b68-4d99-8af4-41707dfc410a",
+      "files": []
+    }
+  ]
+}
