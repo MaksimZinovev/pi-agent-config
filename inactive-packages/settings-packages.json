@@ -1,0 +1,4 @@
+"packages": [
+  "npm:pi-lens",
+   "npm:@gotgenes/pi-subagents",
+]

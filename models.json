@@ -80,6 +80,13 @@
           "id": "gemini-3-flash-preview:cloud",
           "input": ["text", "image"],
           "reasoning": true
+        },
+        {
+          "_launch": true,
+          "contextWindow": 512000,
+          "id": "minimax-m3:cloud",
+          "input": ["text", "image"],
+          "reasoning": true
         }
       ]
     }

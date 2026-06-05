@@ -18,6 +18,7 @@
     "ollama/minimax-m2.7:cloud",
     "ollama/deepseek-v4-pro:cloud",
     "ollama/kimi-k2.5:cloud",
+    "ollama/minimax-m3:cloud",
     "ollama/minimax-m2.7:cloud",
     "ollama/deepseek-v4-flash:cloud",
     "ollama/gemini-3-flash-preview:cloud"

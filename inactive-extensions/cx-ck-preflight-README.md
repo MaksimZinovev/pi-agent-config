@@ -1,0 +1,1 @@
+/Users/maksim/repos/pi-agent-config/extensions/cx-ck-preflight-README.md

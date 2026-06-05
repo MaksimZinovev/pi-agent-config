@@ -18,7 +18,7 @@ Evidence-only: produce an Evidence Pack + recommended next action. Do not edit c
 
 ## Quick start
 
-Skill and scripts are typically located in `$HOME/.claude/skills/research-docs-grounding`. Check `$HOME/.claude/plugins` if not in skills.
+Skill and scripts are typically located in `research-docs-groundin/scripts`, `research-docs-groundin/references`. Check `$HOME/.claude/plugins` if not in skills.
 Available
 
 ```bash
