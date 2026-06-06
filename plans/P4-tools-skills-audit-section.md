@@ -1,0 +1,4 @@
+# P4: Skill Missing Tools & Skills Audit Section
+
+Problem: Planner has access to multiple tools and skills (cx, ck, ast_grep, DeepWiki, Context7, etc.) but doesn't always use them. No accountability for which were considered and why some were skipped.
+Direction: Add "## Tools & Skills" as a required section. Planner lists top ~10 relevant candidates from available tools/skills, marks each Yes (must use) / No (not needed, one-line justification required) / Possibly (might use). DocFence `match` rule verifies Yes/No/Possibly labels present; `heading_level` ensures section exists. Alternative: just list tools in plan header without justification (less accountable, harder to validate).
