@@ -1,0 +1,53 @@
+name = "plan"
+statuses = ["draft", "active", "frozen", "done"]
+required_fields = ["id", "status", "owner"]
+
+[defaults]
+max_chars = 20000
+banned_words = ["TODO", "TBD", "placeholder"]
+required_sections = [
+  "Context",
+  "Approach",
+  "Steps",
+  "Files to Modify",
+  "Reuse",
+  "Evidence Pack",
+  "Verification",
+  "Bottom Line",
+]
+placeholders = ["```df-todo", "[REPLACE]"]
+
+[defaults.match]
+has_checklist = '^- \[( |x)\]'
+has_source = 'Source:'
+has_file_marker = "(CREATED|UPDATED|DELETED)"
+has_test = "^### Test"
+
+[template_vars]
+id = "PLAN-001"
+title = "Plan Title"
+owner = "human"
+
+[template_vars.sections.Context]
+fill = "[REPLACE] Why this change is needed — what problem does it solve?"
+
+[template_vars.sections.Approach]
+fill = "[REPLACE] Recommended approach and rationale — why this direction over alternatives?"
+
+[template_vars.sections.Steps]
+fill = "[REPLACE] Phased checklist items with evidence citations — use - [ ] format"
+
+[template_vars.sections."Files to Modify"]
+fill = "[REPLACE] Explicit list of files to create, update, or delete"
+
+[template_vars.sections.Reuse]
+fill = "[REPLACE] Existing code, libraries, or patterns to leverage"
+
+[template_vars.sections."Evidence Pack"]
+fill = "[REPLACE] Claims with Source, Confidence, Implication — cite every claim"
+
+[template_vars.sections.Verification]
+fill = "[REPLACE] Test N blocks with commands and expected results"
+
+[template_vars.sections."Bottom Line"]
+fill = "[REPLACE] Per-step confidence, key risk, gaps, recommendation"

@@ -10,15 +10,37 @@ Every plan **must** contain these sections. Omitting any is an error. Validate w
 | `## Approach` | Recommended direction and why, over alternatives |
 | `## Steps` | `- [ ]` checklist items with evidence citations |
 | `## Files to Modify` | Explicit list: create, update, or delete |
-| `## Reuse` | Existing code, libraries, or patterns to leverage |
+| `## Reuse` | Existing code, libraries, or patterns to leverage. Include partial reusable extraction suggestions |
 | `## Evidence Pack` | Claims with Source, Confidence, Implication |
 | `## Verification` | `### Test N` blocks with commands and expected results |
 | `## Bottom Line` | Per-step confidence, key risk, gaps, recommendation |
 
 ## Full Format Template
 
-```
+````markdown
+---
+id: PLAN-001
+type: plan
+status: draft
+owner: human
+depends_on: []
+last_validated: ~
+---
+
 # [Task Name]
+
+```spec
+scope: document
+type: plan
+required_sections: [Context, Approach, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line]
+max_chars: 20000
+banned_words: [TODO, TBD, placeholder]
+match:
+  has_checklist: '^- \[( |x)\]'
+  has_source: 'Source:'
+  has_file_marker: "(CREATED|UPDATED|DELETED)"
+  has_test: "^### Test"
+```
 
 ## Context
 [Why this change is needed — what problem does it solve?]
@@ -72,12 +94,28 @@ Expected: [what success looks like]
 - **Key risk**: [biggest risk and mitigation]
 - **Gaps**: [1–2 things we couldn't verify]
 - **Recommendation**: [proceed / proceed with caution / need more info]
-```
+````
+
+## Validation
+
+Every plan is validated against the `plan` docfence doctype (`.docfence/types/plan.toml`). This enforces:
+- All 8 required sections present
+- No banned words (TODO, TBD, placeholder)
+- No unfilled `[REPLACE]` or `df-todo` placeholders
+
+The document-level spec block also enforces structural `match` rules:
+- `has_checklist` — at least one `- [ ]` or `- [x]` step exists
+- `has_source` — at least one `**Source**` evidence citation exists
+- `has_file_marker` — at least one CREATED/UPDATED/DELETED marker in Files to Modify
+- `has_test` — at least one `### Test` block in Verification
+
+Run `docfence validate plans/<name>.md` after writing. Fix errors until clean. Do not declare the plan done until validation passes.
 
 ## Workflow
 
 1. Spawn planner subagent → it writes `plans/<name>.md`
-2. Run `/plannotator-annotate plans/<name>.md` → visual review in browser
+2. Run `docfence validate plans/<name>.md` → fix errors until clean
+3. Run `/plannotator-annotate plans/<name>.md` → visual review in browser
 
 ## Combined format (Plannotator structure + grounded evidence)
 

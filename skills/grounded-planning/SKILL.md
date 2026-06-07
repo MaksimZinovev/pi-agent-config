@@ -23,10 +23,12 @@ Research → Plan → Validate. Do not edit code/config/docs during the research
 4. Break into keywords; build queries
 5. Check sources in priority order; stop when sufficient
 6. Write Evidence Pack (≤8 claims for low/medium; ≤12 for high)
-7. Write the plan with all required sections (see Step 5 table)
-8. Write Bottom Line summary
-9. State gaps explicitly — never hide missing evidence
-10. Validate: every required section present, steps use `- [ ]` format
+7. Read references/format.md — internalize required sections before writing
+8. Write the plan with all required sections (see Step 5 table)
+9. Write Bottom Line summary
+10. State gaps explicitly — never hide missing evidence
+11. Validate: every required section present, steps use `- [ ]` format
+12. Run `docfence validate plans/<name>.md`; fix errors until clean
 ```
 
 ## Source Priority Order
@@ -140,11 +142,17 @@ The final plan **must** contain all 8 sections and use `- [ ]` checklists for st
 ## Bottom Line — confidence, key risk, gaps, recommendation
 ```
 
+⚠️ **Read `references/format.md` before writing the plan.** It defines the exact template, required sections, placeholder format, and directory layout. Do not write from memory — read it first.
+
 See `references/format.md` for the full template with examples and directory layout.
 
 ### Step 6: Write the Bottom Line
 
 Every plan ends with a Bottom Line. See `references/format.md` for the format.
+
+### Step 7: Validate with docfence
+
+Run `docfence validate plans/<name>.md` on the finished plan. Fix every error and re-run until the file validates clean. The `plan` doctype enforces all 8 required sections, banned words, and placeholder checks. If docfence reports missing sections, add them. If it finds banned words or unfilled placeholders, fix them. Do not declare the plan done until validation passes.
 
 ## Hard Requirements
 
@@ -162,6 +170,7 @@ These are non-negotiable. Violating any of these makes the output unreliable.
 - **If evidence is insufficient**: ask the user for the exact missing observation (command output, log, file snippet, clarification). Do NOT fabricate claims
 - **If sources conflict**: record both claims, propose a discriminating check, and ask the user to verify
 - **If the user says "just go ahead"**: switch to low uncertainty mode, clearly note what was not verified
+- **Do not skip `docfence validate`** — every plan must pass validation before delivery
 
 ## Stop Conditions
 
