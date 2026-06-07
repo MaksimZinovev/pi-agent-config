@@ -1,5 +1,5 @@
 ---
-name: traktor-dj-studio
+name: traktordj
 description: |
   Progressive disclosure skill for learning Traktor Pro 3.11 with Traktor Kontrol S2 MK3 on macOS.
   Targets intermediate/advanced DJs who know basics and want to master: advanced configuration,
