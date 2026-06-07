@@ -1,5 +1,79 @@
 # Grounded Planning × Plannotator — Format Reference
 
+Every plan **must** contain these sections. Omitting any is an error. Validate with `docfence validate` before declaring done.
+
+## Required Sections
+
+| Section | Purpose |
+|---------|---------|
+| `## Context` | Why this change is needed |
+| `## Approach` | Recommended direction and why, over alternatives |
+| `## Steps` | `- [ ]` checklist items with evidence citations |
+| `## Files to Modify` | Explicit list: create, update, or delete |
+| `## Reuse` | Existing code, libraries, or patterns to leverage |
+| `## Evidence Pack` | Claims with Source, Confidence, Implication |
+| `## Verification` | `### Test N` blocks with commands and expected results |
+| `## Bottom Line` | Per-step confidence, key risk, gaps, recommendation |
+
+## Full Format Template
+
+```
+# [Task Name]
+
+## Context
+[Why this change is needed — what problem does it solve?]
+
+## Approach
+[Recommended approach and rationale — why this direction over alternatives?]
+
+## Steps
+
+### Phase 1: [Phase Name]
+- [ ] **Step 1**: [Action]
+  - Evidence: [cite claim from Evidence Pack, or "known pattern"]
+  - Confidence: [0.0–1.0]
+  - Details: [specific enough to execute immediately]
+- [ ] **Step 2**: [Action]
+  - Evidence: [...]
+  - Confidence: [...]
+  - Details: [...]
+
+### Phase 2: [Phase Name]
+- [ ] **Step 3**: [Action]
+  ...
+
+## Files to Modify
+- `path/to/file.ts` — CREATED
+- `path/to/config.ts` — UPDATED
+
+## Reuse
+- [Existing code, libraries, or patterns to leverage]
+
+## Evidence Pack
+
+- **Claim**: [what we learned]
+  **Source**: [path, URL, or Context7 section]
+  **Confidence**: [0.0–1.0]
+  **Implication**: [what this means for the plan]
+
+### Gaps
+- [What we couldn't verify]
+
+## Verification
+
+### Test 1: [description]
+```bash
+command --to-run
+```
+Expected: [what success looks like]
+
+## Bottom Line
+- **Per-step confidence**: [average confidence]
+- **Key risk**: [biggest risk and mitigation]
+- **Gaps**: [1–2 things we couldn't verify]
+- **Recommendation**: [proceed / proceed with caution / need more info]
+```
+
 ## Workflow
 
 1. Spawn planner subagent → it writes `plans/<name>.md`

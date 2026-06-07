@@ -12,7 +12,7 @@ Research first, then plan — never guess when evidence is available.
 
 ## Scope
 
-Evidence Pack → Grounded Plan. Do not edit code/config/docs during the research phase. The plan phase produces an actionable document; execution is separate.
+Research → Plan → Validate. Do not edit code/config/docs during the research phase. The plan phase produces an actionable document; execution is separate. Validate the final plan against the required output format before declaring done.
 
 ## Quick Reference
 
@@ -23,9 +23,10 @@ Evidence Pack → Grounded Plan. Do not edit code/config/docs during the researc
 4. Break into keywords; build queries
 5. Check sources in priority order; stop when sufficient
 6. Write Evidence Pack (≤8 claims for low/medium; ≤12 for high)
-7. Write Grounded Plan (each step cites evidence)
+7. Write the plan with all required sections (see Step 5 table)
 8. Write Bottom Line summary
 9. State gaps explicitly — never hide missing evidence
+10. Validate: every required section present, steps use `- [ ]` format
 ```
 
 ## Source Priority Order
@@ -125,50 +126,25 @@ Use this exact format for each claim:
 
 ### Step 5: Write the Grounded Plan
 
-Use this exact format:
+The final plan **must** contain all 8 sections and use `- [ ]` checklists for steps, not bold headers. Minimal structure:
 
 ```
-## Grounded Plan: [Task Name]
-
-**Goal**: [one-sentence objective]
-**Uncertainty Level**: [low/medium/high]
-**Evidence Sources Used**: [list sources consulted]
-
-### Phase 1: [Phase Name]
-
-**Step 1**: [Action]
-- **Evidence**: [cite specific claim from Evidence Pack, or "known pattern, no source needed"]
-- **Confidence**: [0.0–1.0]
-- **Details**: [specific enough to execute immediately]
-
-**Step 2**: [Action]
-- **Evidence**: [...]
-- **Confidence**: [...]
-- **Details**: [...]
-
-### Decision Points
-- [If X, then Y — cite evidence for why]
-
-### Risks & Mitigations
-- **Risk**: [what could go wrong]
-  **Mitigation**: [how to handle it, cite evidence if available]
-
-### Verification Checkpoint
-- [How to verify this plan is working at each phase boundary]
+# [Task Name]
+## Context — why this change is needed
+## Approach — recommended direction and why
+## Steps — phased `- [ ]` checklists with evidence citations
+## Files to Modify — explicit list (CREATED/UPDATED/DELETED)
+## Reuse — existing code or patterns to leverage
+## Evidence Pack — claims with Source, Confidence, Implication
+## Verification — `### Test N` blocks with commands + expected results
+## Bottom Line — confidence, key risk, gaps, recommendation
 ```
+
+See `references/format.md` for the full template with examples and directory layout.
 
 ### Step 6: Write the Bottom Line
 
-End every grounded plan with a 3–5 line summary:
-
-```
-## Bottom Line
-
-- **Per-step confidence**: [average confidence across plan steps]
-- **Key risk**: [the single biggest risk and its mitigation]
-- **Gaps**: [1–2 most important things we couldn't verify]
-- **Recommendation**: [proceed / proceed with caution / need more info — and why]
-```
+Every plan ends with a Bottom Line. See `references/format.md` for the format.
 
 ## Hard Requirements
 
@@ -180,6 +156,8 @@ These are non-negotiable. Violating any of these makes the output unreliable.
 - **Do not paste entire documentation pages** — extract only the relevant claim
 - **Do not skip Phase 1** (evidence) and jump to Phase 2 (planning)
 - **Do not produce plan steps without evidence citations**
+- **Do not use `**Step N**:` bold headers** — use `- [ ]` checklist items under `## Steps`
+- **Do not omit required sections** — Context, Approach, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line must all appear
 - **Do not query all sources by default** — start local and escalate only as needed
 - **If evidence is insufficient**: ask the user for the exact missing observation (command output, log, file snippet, clarification). Do NOT fabricate claims
 - **If sources conflict**: record both claims, propose a discriminating check, and ask the user to verify
