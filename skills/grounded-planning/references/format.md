@@ -7,6 +7,7 @@ Every plan **must** contain these sections. Omitting any is an error. Scaffold w
 | Section | Purpose |
 |---------|---------|
 | `## Context` | Why this change is needed |
+| `## Tools & Skills` | Relevant tools/skills marked Yes (must use) / No (not needed, why) / Possibly (might use) |
 | `## Approach` | Recommended direction and why, over alternatives |
 | `## Out of Scope` | Bullet list of excluded items with one-line justification each |
 | `## Steps` | `- [ ]` checklist items with evidence citations |
@@ -33,7 +34,7 @@ last_validated: ~
 ```spec
 scope: document
 type: plan
-required_sections: [Context, Approach, Out of Scope, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line]
+required_sections: [Context, Tools & Skills, Approach, Out of Scope, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line]
 max_chars: 20000
 banned_words: [TODO, TBD, placeholder]
 match:
@@ -42,10 +43,15 @@ match:
   has_file_marker: "(CREATED|UPDATED|DELETED)"
   has_test: "^### Test"
   has_out_of_scope: "^## Out of Scope"
+  has_tools_and_skills: "^## Tools & Skills"
+  has_ynp_format: '^- \*\*[^*]+\*\*: (Yes|No|Possibly)\b'
 ```
 
 ## Context
 [Why this change is needed — what problem does it solve?]
+
+## Tools & Skills
+- **tool_name**: Yes / No (why not needed) / Possibly (when you'd use it)
 
 ## Approach
 [Recommended approach and rationale — why this direction over alternatives?]
@@ -104,7 +110,7 @@ Expected: [what success looks like]
 ## Validation
 
 Every plan is validated against the `plan` docfence doctype (`.docfence/types/plan.toml`). This enforces:
-- All 9 required sections present
+- All 10 required sections present
 - No banned words (TODO, TBD, placeholder)
 - No unfilled `[REPLACE]` or `df-todo` placeholders
 
@@ -114,6 +120,8 @@ The document-level spec block also enforces structural `match` rules:
 - `has_file_marker` — at least one CREATED/UPDATED/DELETED marker in Files to Modify
 - `has_test` — at least one `### Test` block in Verification
 - `has_out_of_scope` — `## Out of Scope` section exists
+- `has_tools_and_skills` — `## Tools & Skills` section exists
+- `has_ynp_format` — at least one Y/N/P audit entry (`- **name**: Yes/No/Possibly`)
 
 Run `docfence validate plans/<name>.md` after writing. Fix errors until clean. Do not declare the plan done until validation passes.
 

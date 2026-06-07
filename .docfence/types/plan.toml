@@ -7,6 +7,7 @@ max_chars = 20000
 banned_words = ["TODO", "TBD", "placeholder"]
 required_sections = [
   "Context",
+  "Tools & Skills",
   "Approach",
   "Out of Scope",
   "Steps",
@@ -24,6 +25,8 @@ has_source = 'Source:'
 has_file_marker = "(CREATED|UPDATED|DELETED)"
 has_test = "^### Test"
 has_out_of_scope = "^## Out of Scope"
+has_tools_and_skills = '^## Tools & Skills'
+has_ynp_format = '^- \*\*[^*]+\*\*: (Yes|No|Possibly)\b'
 
 [template_vars]
 id = "PLAN-001"
@@ -32,6 +35,9 @@ owner = "human"
 
 [template_vars.sections.Context]
 fill = "[REPLACE] Why this change is needed — what problem does it solve?"
+
+[template_vars.sections."Tools & Skills"]
+fill = "[REPLACE] List relevant tools/skills with Yes (must use) / No (not needed, why) / Possibly (might use)"
 
 [template_vars.sections.Approach]
 fill = "[REPLACE] Recommended approach and rationale — why this direction over alternatives?"

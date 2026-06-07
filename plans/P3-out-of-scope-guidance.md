@@ -1,3 +1,9 @@
+---
+id: P2
+type: plan
+status: done
+owner: human
+---
 # P3: Skill Missing Out-of-Scope Guidance
 
 Problem: Plans include what to do but never state what's explicitly excluded — leads to scope creep and ambiguous boundaries.

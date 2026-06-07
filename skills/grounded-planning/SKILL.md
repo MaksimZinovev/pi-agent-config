@@ -137,11 +137,12 @@ docfence new plan --output plans/<name>.md --id <ID> --title "<title>" --owner <
 
 This produces a file with all required sections, spec blocks, and `[REPLACE]` placeholders. Then fill each section with researched content — replacing every `[REPLACE]` and `df-todo` block. Do **not** write plans from scratch; always scaffold first.
 
-The plan **must** contain all 9 sections (including `## Out of Scope`) and use `- [ ]` checklists for steps, not bold headers. Minimal structure:
+The plan **must** contain all 10 sections (including `## Tools & Skills` and `## Out of Scope`) and use `- [ ]` checklists for steps, not bold headers. Minimal structure:
 
 ```
 # [Task Name]
 ## Context — why this change is needed
+## Tools & Skills — Y/N/P audit of relevant tools and skills
 ## Approach — recommended direction and why
 ## Out of Scope — bullet list of excluded items with one-line justification each
 ## Steps — phased `- [ ]` checklists with evidence citations
@@ -162,7 +163,7 @@ Every plan ends with a Bottom Line. See `references/format.md` for the format.
 
 ### Step 7: Validate with docfence
 
-Run `docfence validate plans/<name>.md` on the finished plan. Fix every error and re-run until the file validates clean. The `plan` doctype enforces all 9 required sections, banned words, and placeholder checks. If docfence reports missing sections, add them. If it finds banned words or unfilled placeholders, fix them. Do not declare the plan done until validation passes.
+Run `docfence validate plans/<name>.md` on the finished plan. Fix every error and re-run until the file validates clean. The `plan` doctype enforces all 10 required sections, banned words, and placeholder checks. If docfence reports missing sections, add them. If it finds banned words or unfilled placeholders, fix them. Do not declare the plan done until validation passes.
 
 ## Hard Requirements
 
@@ -175,7 +176,7 @@ These are non-negotiable. Violating any of these makes the output unreliable.
 - **Do not skip Phase 1** (evidence) and jump to Phase 2 (planning)
 - **Do not produce plan steps without evidence citations**
 - **Do not use `**Step N**:` bold headers** — use `- [ ]` checklist items under `## Steps`
-- **Do not omit required sections** — Context, Approach, Out of Scope, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line must all appear
+- **Do not omit required sections** — Context, Tools & Skills, Approach, Out of Scope, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line must all appear
 - **Do not query all sources by default** — start local and escalate only as needed
 - **If evidence is insufficient**: ask the user for the exact missing observation (command output, log, file snippet, clarification). Do NOT fabricate claims
 - **If sources conflict**: record both claims, propose a discriminating check, and ask the user to verify
@@ -183,6 +184,7 @@ These are non-negotiable. Violating any of these makes the output unreliable.
 - **Do not skip `docfence validate`** — every plan must pass validation before delivery
 - **Do not write plans from scratch** — always scaffold with `docfence new plan` first, then fill in
 - **Do not leave `## Out of Scope` vague** — each excluded item needs a one-line justification (`- **X**: because [reason]`)
+- **Do not skip the Y/N/P audit** — `## Tools & Skills` must list relevant tools/skills with `Yes` (must use), `No` (not needed, with justification), or `Possibly` (might use) labels
 
 ## Stop Conditions
 

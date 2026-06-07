@@ -7,6 +7,18 @@ owner: human
 
 # P2: Skill Missing Format Reference and Validation Loop
 
+```spec
+scope: document
+type: plan
+```
+
+## Tools & Skills
+- **docfence CLI**: Yes — validate and scaffold plan documents
+- **cx/ck**: No — not needed for this config task
+- **DeepWiki**: No — no repo architecture research needed
+- **Context7**: No — no external library docs needed
+- **hex_edit**: Possibly — used in prior session for edits
+
 ## Context
 The grounded-planning skill produces plans but never instructs the planner to reference `references/format.md` or validate output against it — plans are produced without checking format compliance. Docfence already supports typed validation via `.docfence/types/`, so we can create a doctype that codifies the grounded-plan format and enforce it automatically.
 
@@ -62,22 +74,22 @@ This beats alternatives because the doctype makes format compliance machine-chec
 ## Evidence Pack
 
 - **Claim**: Docfence validates markdown docs against type definitions in `.docfence/types/`
-  **Source**: docfence README — Quick Start, Types sections
+  Source: docfence README — Quick Start, Types sections
   **Confidence**: 1.0
   **Implication**: We can create a `plan` type that enforces the 8 required sections
 
 - **Claim**: Type definitions support required_sections, required_fields, banned_words, template_vars with fill placeholders
-  **Source**: `.docfence/types/exploration.toml` and `feature.toml`
+  Source: `.docfence/types/exploration.toml` and `feature.toml`
   **Confidence**: 1.0
   **Implication**: All the validation rules we need (sections, frontmatter, banned words) are already supported by the type system
 
 - **Claim**: Docfence looks for `.docfence/types/` relative to the target path
-  **Source**: README note "docfence looks for .docfence/types/ relative to the target path"
+  Source: README note "docfence looks for .docfence/types/ relative to the target path"
   **Confidence**: 1.0
   **Implication**: Both repos need the doctype definition in their own `.docfence/types/` directory
 
 - **Claim**: The 8 required sections in format.md are: Context, Approach, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line
-  **Source**: `skills/grounded-planning/references/format.md` Required Sections table
+  Source: `skills/grounded-planning/references/format.md` Required Sections table
   **Confidence**: 1.0
   **Implication**: These map directly to `required_sections` in the toml
 
