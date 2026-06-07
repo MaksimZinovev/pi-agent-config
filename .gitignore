@@ -118,3 +118,7 @@ run-history.jsonl
 inactive-skills/
 inactive-extensions.json
 .pi/
+
+# Keep tracking selected skills 
+!inactive-skills/traktor-dj-skill/
+!inactive-skills/traktor-dj-skill/**

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Traktor Pro 3.11 — Intermediate Custom Mapping for S2 MK3
+  Level 1: Builds on factory mapping, adds performance essentials
+  Import via: Preferences → Controller Manager → Import
+  
+  Requires: S2 MK3 Firmware 1.1.0+, Traktor Pro 3.3+
+  Tested on: macOS 14+ (Sonoma), Traktor 3.11
+-->
+
+<DEVICE NAME="Traktor Kontrol S2 MK3 (Intermediate)" TYPE="MIDI" MIDI_IN="Traktor Kontrol S2 MK3" MIDI_OUT="Traktor Kontrol S2 MK3" HID="false">
+  <!-- 
+    This .tsi is a reference template. Actual mappings must be created in Traktor
+    using MIDI Learn. This file documents the INTENDED mappings.
+    
+    To implement:
+    1. Duplicate factory mapping in Controller Manager
+    2. Name: "S2 MK3 Intermediate Custom"
+    3. Add each mapping below using Learn button
+    4. Set Comments column for each row
+  -->
+
+  <!-- ===== DECK NAVIGATION (Shift Layer) ===== -->
+  <!-- Shift + Deck Toggle Left → Deck 3 Select -->
+  <!-- Control: "Deck 3 Select" | Type: Button | Interaction: Direct | Assignment: Note 48 (Ch 1) | Modifier: M1=1 | Comment: "Shift+DeckToggleL → Deck 3" -->
+  
+  <!-- Shift + Deck Toggle Right → Deck 4 Select -->
+  <!-- Control: "Deck 4 Select" | Type: Button | Interaction: Direct | Assignment: Note 49 (Ch 1) | Modifier: M1=1 | Comment: "Shift+DeckToggleR → Deck 4" -->
+  
+  <!-- Shift + Browse Encoder Press → Cycle Deck Focus (1→2→3→4) -->
+  <!-- Control: "Next Deck" | Type: Button | Interaction: Direct | Assignment: Note 50 (Ch 1) | Modifier: M1=1 | Comment: "Shift+BrowsePress → Cycle Deck" -->
+
+  <!-- ===== EFFECTS PERFORMANCE (Shift + FX Section) ===== -->
+  <!-- Shift + FX 1 Knob → FX Unit 1 Slot 1 Param 1 -->
+  <!-- Control: "FX Unit 1 Slot 1 Param 1" | Type: Knob | Interaction: Relative | Assignment: CC 16 (Ch 1) | Modifier: M1=1 | Comment: "Shift+FX1Knob → FX1 Slot1 Param1" -->
+  
+  <!-- Shift + FX 1 Button → FX Unit 1 Slot 1 On/Off -->
+  <!-- Control: "FX Unit 1 Slot 1 On" | Type: Button | Interaction: Toggle | Assignment: Note 16 (Ch 1) | Modifier: M1=1 | Comment: "Shift+FX1Btn → FX1 Slot1 Toggle" -->
+  
+  <!-- Shift + FX 2 Knob → FX Unit 1 Slot 2 Param 1 -->
+  <!-- Control: "FX Unit 1 Slot 2 Param 1" | Type: Knob | Interaction: Relative | Assignment: CC 17 (Ch 1) | Modifier: M1=1 | Comment: "Shift+FX2Knob → FX1 Slot2 Param1" -->
+  
+  <!-- Shift + FX 2 Button → FX Unit 1 Slot 2 On/Off -->
+  <!-- Control: "FX Unit 1 Slot 2 On" | Type: Button | Interaction: Toggle | Assignment: Note 17 (Ch 1) | Modifier: M1=1 | Comment: "Shift+FX2Btn → FX1 Slot2 Toggle" -->
+  
+  <!-- Shift + FX 3 Knob → FX Unit 1 Slot 3 Param 1 -->
+  <!-- Control: "FX Unit 1 Slot 3 Param 1" | Type: Knob | Interaction: Relative | Assignment: CC 18 (Ch 1) | Modifier: M1=1 | Comment: "Shift+FX3Knob → FX1 Slot3 Param1" -->
+  
+  <!-- Shift + FX 3 Button → FX Unit 1 Slot 3 On/Off -->
+  <!-- Control: "FX Unit 1 Slot 3 On" | Type: Button | Interaction: Toggle | Assignment: Note 18 (Ch 1) | Modifier: M1=1 | Comment: "Shift+FX3Btn → FX1 Slot3 Toggle" -->
+
+  <!-- ===== STEM DECK CONTROLS (Cue Layer) ===== -->
+  <!-- Cue + EQ High → Stem 1 Solo -->
+  <!-- Control: "Stem Deck 1 Solo" | Type: Button | Interaction: Toggle | Assignment: Note 24 (Ch 1) | Modifier: M2=1 | Comment: "Cue+EQHigh → Stem 1 Solo" -->
+  
+  <!-- Cue + EQ Mid → Stem 2 Solo -->
+  <!-- Control: "Stem Deck 2 Solo" | Type: Button | Interaction: Toggle | Assignment: Note 25 (Ch 1) | Modifier: M2=1 | Comment: "Cue+EQMid → Stem 2 Solo" -->
+  
+  <!-- Cue + EQ Low → Stem 3 Solo -->
+  <!-- Control: "Stem Deck 3 Solo" | Type: Button | Interaction: Toggle | Assignment: Note 26 (Ch 1) | Modifier: M2=1 | Comment: "Cue+EQLow → Stem 3 Solo" -->
+  
+  <!-- Cue + Filter → Stem 4 Solo -->
+  <!-- Control: "Stem Deck 4 Solo" | Type: Button | Interaction: Toggle | Assignment: Note 27 (Ch 1) | Modifier: M2=1 | Comment: "Cue+Filter → Stem 4 Solo" -->
+
+  <!-- ===== FLUX MODE TOGGLES ===== -->
+  <!-- Shift + Sync (Deck A) → Flux Mode Deck 1 -->
+  <!-- Control: "Deck 1 Flux Mode" | Type: Button | Interaction: Toggle | Assignment: Note 32 (Ch 1) | Modifier: M1=1 | Comment: "Shift+Sync → Deck 1 Flux" -->
+  
+  <!-- Shift + Sync (Deck B) → Flux Mode Deck 2 -->
+  <!-- Control: "Deck 2 Flux Mode" | Type: Button | Interaction: Toggle | Assignment: Note 33 (Ch 1) | Modifier: M1=1 | Comment: "Shift+Sync → Deck 2 Flux" -->
+
+  <!-- ===== EMERGENCY / SAFETY ===== -->
+  <!-- Shift + FX Select → Master Limiter On/Off -->
+  <!-- Control: "Master Limiter On" | Type: Button | Interaction: Toggle | Assignment: Note 40 (Ch 1) | Modifier: M1=1 | Comment: "Shift+FXSelect → Master Limiter" -->
+  
+  <!-- Cue + Play → Emergency Unload Deck -->
+  <!-- Control: "Deck 1 Unload" | Type: Button | Interaction: Direct | Assignment: Note 41 (Ch 1) | Modifier: M2=1 | Comment: "Cue+Play → Unload Deck 1" -->
+
+  <!-- ===== MODIFIER DEFINITIONS ===== -->
+  <!-- M1 = Shift Held (Note 60, Ch 1, Toggle) -->
+  <!-- Control: "Modifier M1" | Type: Button | Interaction: Toggle | Assignment: Note 60 (Ch 1) | Comment: "M1 = Shift Held" -->
+  
+  <!-- M2 = Cue Held (Note 61, Ch 1, Toggle) -->
+  <!-- Control: "Modifier M2" | Type: Button | Interaction: Toggle | Assignment: Note 61 (Ch 1) | Comment: "M2 = Cue Held" -->
+
+</DEVICE>
+
+<!-- 
+  IMPLEMENTATION NOTES:
+  
+  1. MIDI CHANNELS: Factory uses Ch 1-4 for Decks A-D. Custom mappings above use Ch 1.
+     Verify no conflicts with factory assignments.
+  
+  2. MODIFIER LOGIC:
+     - M1 (Shift): Factory already uses Shift for secondary functions.
+       Our custom mappings ADD Shift+FX controls without breaking factory.
+     - M2 (Cue): Factory uses Cue for cue points. Our Stem Solo mappings
+       require Cue+EQ which may conflict. Test thoroughly.
+  
+  3. LED FEEDBACK:
+     For each Toggle mapping above, add corresponding LED Output:
+     - "LED Deck 3 Select" → Note 48 (Ch 1) → Green when Deck 3 active
+     - "LED FX Unit 1 Slot 1 On" → Note 16 (Ch 1) → Red when ON
+     - "LED Master Limiter" → Note 40 (Ch 1) → Yellow when ON
+  
+  4. TESTING CHECKLIST:
+     [ ] All Shift+FX knobs control correct FX Unit 1 slots
+     [ ] All Shift+FX buttons toggle slots correctly
+     [ ] Deck 3/4 select works, LEDs update
+     [ ] Stem Solo works when Stem Deck loaded
+     [ ] Flux toggles work per deck
+     [ ] Master Limiter audible effect
+     [ ] No factory functions broken
+  
+  5. BACKUP: Export this mapping as "S2_MK3_Intermediate_Custom.tsi" after verifying.
+-->

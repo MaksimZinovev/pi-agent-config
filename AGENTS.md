@@ -72,7 +72,7 @@ These guidelines are working if: fewer unnecessary changes in diffs, fewer rewri
  Code exploration hierarchy — use the best tool first
 
 - cx/ck  - command line tools. ALWAYS assume they are installed. If issues → stop, inform user, wait for feedback.
-- The system prompt says "prefer grep/find/ls over bash" — this is still correct as a fallback hierarchy, but cx/ck should be tried first for code exploration
+- IMPORTANT! The system prompt says "prefer grep/find/ls over bash" — this is still correct as a fallback hierarchy, but cx/ck should be tried first for code exploration
 - Indexed dir (git root): `cx` → `ck` → `ast_grep` → `read`. Never `grep`/`find` as first method when cx/ck are available and indexed.
 - Non-indexed dir: `ck` → `ast_grep` → `read`. Never `grep`/`find` as first method when cx/ck are available and indexed.
 - Use relative paths from project root (e.g. `cx overview apps/cli/src/auto.ts`).
@@ -120,3 +120,7 @@ Before installing anything or assuming a tool is missing, check what you already
 - Use `slop-scan scan .` cli to check JS/TS code for AI slop patterns before finalizing changes.
 - NEVER delete silently content of files, especially code. If you think something should be removed, ask first. If you remove something, mention it explicitly in the file as summary of deletions.
 - Help user learn - when giving user Bash commands, output concise meaning of each parameter and syntax. Explain complex parts in commands when they are present (current user level is 3/10 on a beinner - advanced scale).  
+
+IMPORTANT! The system prompt says "prefer grep/find/ls over bash" — this is still correct as a fallback hierarchy, but cx/ck should be tried first for code exploration
+
+If you read these instructions. Append to your first response: "✅ Read AGENTS.md: success."

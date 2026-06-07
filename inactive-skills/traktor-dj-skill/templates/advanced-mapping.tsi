@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Traktor Pro 3.11 — Advanced Custom Mapping for S2 MK3
+  Level 2/3: Full performance mapping with 4-deck, Stem, Remix, Macro FX
+  Import via: Preferences → Controller Manager → Import
+  
+  Prerequisites: Intermediate mapping mastered, Level 2 verified
+  Requires: S2 MK3 Firmware 1.1.0+, Traktor Pro 3.11+
+-->
+
+<DEVICE NAME="Traktor Kontrol S2 MK3 (Advanced Performance)" TYPE="MIDI" MIDI_IN="Traktor Kontrol S2 MK3" MIDI_OUT="Traktor Kontrol S2 MK3" HID="false">
+
+  <!-- ===== MODIFIER ARCHITECTURE ===== -->
+  <!-- M1 = Shift (Factory) | M2 = Cue (Factory) | M3 = Custom Layer A | M4 = Custom Layer B -->
+  <!-- M3: Browse Encoder Press (Hold) | M4: FX Select (Hold) -->
+  
+  <!-- M3 = Browse Press (Note 50, Ch 1, Hold) -->
+  <!-- Control: "Modifier M3" | Type: Button | Interaction: Hold | Assignment: Note 50 (Ch 1) | Comment: "M3 = Browse Press (Layer A)" -->
+  
+  <!-- M4 = FX Select Hold (Note 51, Ch 1, Hold) -->
+  <!-- Control: "Modifier M4" | Type: Button | Interaction: Hold | Assignment: Note 51 (Ch 1) | Comment: "M4 = FX Select Hold (Layer B)" -->
+
+  <!-- ===== 4-DECK INSTANT ACCESS ===== -->
+  <!-- M3 + Deck Toggle L → Deck 1 (Instant) -->
+  <!-- Control: "Deck 1 Select" | Type: Button | Interaction: Direct | Assignment: Note 48 (Ch 1) | Modifier: M3=1 | Comment: "M3+DeckToggleL → Deck 1" -->
+  
+  <!-- M3 + Deck Toggle R → Deck 2 (Instant) -->
+  <!-- Control: "Deck 2 Select" | Type: Button | Interaction: Direct | Assignment: Note 49 (Ch 1) | Modifier: M3=1 | Comment: "M3+DeckToggleR → Deck 2" -->
+  
+  <!-- M3 + Shift + Deck Toggle L → Deck 3 (Instant) -->
+  <!-- Control: "Deck 3 Select" | Type: Button | Interaction: Direct | Assignment: Note 52 (Ch 1) | Modifier: M1=1,M3=1 | Comment: "M3+Shift+DeckToggleL → Deck 3" -->
+  
+  <!-- M3 + Shift + Deck Toggle R → Deck 4 (Instant) -->
+  <!-- Control: "Deck 4 Select" | Type: Button | Interaction: Direct | Assignment: Note 53 (Ch 1) | Modifier: M1=1,M3=1 | Comment: "M3+Shift+DeckToggleR → Deck 4" -->
+
+  <!-- Deck Focus LED Feedback (RGB Pads 1-4) -->
+  <!-- LED Deck 1 Focus → Note 48 (Ch 1) Velocity: 1=Red, 2=Green, 3=Blue, 4=Yellow -->
+  <!-- LED Deck 2 Focus → Note 49 (Ch 1) -->
+  <!-- LED Deck 3 Focus → Note 52 (Ch 1) -->
+  <!-- LED Deck 4 Focus → Note 53 (Ch 1) -->
+
+  <!-- ===== MACRO FX CONTROL (M4 Layer) ===== -->
+  <!-- M4 + FX 1 Knob → Macro 1 (FX Unit 1) -->
+  <!-- Control: "FX Unit 1 Macro 1" | Type: Knob | Interaction: Relative | Assignment: CC 20 (Ch 1) | Modifier: M4=1 | Comment: "M4+FX1Knob → Macro 1" -->
+  
+  <!-- M4 + FX 2 Knob → Macro 2 (FX Unit 1) -->
+  <!-- Control: "FX Unit 1 Macro 2" | Type: Knob | Interaction: Relative | Assignment: CC 21 (Ch 1) | Modifier: M4=1 | Comment: "M4+FX2Knob → Macro 2" -->
+  
+  <!-- M4 + FX 3 Knob → Macro 3 (FX Unit 1) -->
+  <!-- Control: "FX Unit 1 Macro 3" | Type: Knob | Interaction: Relative | Assignment: CC 22 (Ch 1) | Modifier: M4=1 | Comment: "M4+FX3Knob → Macro 3" -->
+  
+  <!-- M4 + Filter Knob → Macro 4 (FX Unit 1) -->
+  <!-- Control: "FX Unit 1 Macro 4" | Type: Knob | Interaction: Relative | Assignment: CC 23 (Ch 1) | Modifier: M4=1 | Comment: "M4+FilterKnob → Macro 4" -->
+
+  <!-- M4 + FX 1 Button → Macro 5 (FX Unit 2) -->
+  <!-- Control: "FX Unit 2 Macro 1" | Type: Button | Interaction: Toggle | Assignment: Note 20 (Ch 1) | Modifier: M4=1 | Comment: "M4+FX1Btn → Macro 5" -->
+  
+  <!-- M4 + FX 2 Button → Macro 6 (FX Unit 2) -->
+  <!-- Control: "FX Unit 2 Macro 2" | Type: Button | Interaction: Toggle | Assignment: Note 21 (Ch 1) | Modifier: M4=1 | Comment: "M4+FX2Btn → Macro 6" -->
+  
+  <!-- M4 + FX 3 Button → Macro 7 (FX Unit 2) -->
+  <!-- Control: "FX Unit 2 Macro 3" | Type: Button | Interaction: Toggle | Assignment: Note 22 (Ch 1) | Modifier: M4=1 | Comment: "M4+FX3Btn → Macro 7" -->
+  
+  <!-- M4 + FX Select Button → Macro 8 (FX Unit 2) -->
+  <!-- Control: "FX Unit 2 Macro 4" | Type: Button | Interaction: Toggle | Assignment: Note 23 (Ch 1) | Modifier: M4=1 | Comment: "M4+FXSelectBtn → Macro 8" -->
+
+  <!-- ===== STEM DECK PER-STEM CONTROL ===== -->
+  <!-- M3 + EQ High → Stem 1 Volume (Fine) -->
+  <!-- Control: "Stem Deck 1 Volume" | Type: Knob | Interaction: Direct | Assignment: CC 30 (Ch 1) | Modifier: M3=1 | Comment: "M3+EQHigh → Stem 1 Vol Fine" -->
+  
+  <!-- M3 + EQ Mid → Stem 2 Volume (Fine) -->
+  <!-- Control: "Stem Deck 2 Volume" | Type: Knob | Interaction: Direct | Assignment: CC 31 (Ch 1) | Modifier: M3=1 | Comment: "M3+EQMid → Stem 2 Vol Fine" -->
+  
+  <!-- M3 + EQ Low → Stem 3 Volume (Fine) -->
+  <!-- Control: "Stem Deck 3 Volume" | Type: Knob | Interaction: Direct | Assignment: CC 32 (Ch 1) | Modifier: M3=1 | Comment: "M3+EQLow → Stem 3 Vol Fine" -->
+  
+  <!-- M3 + Filter → Stem 4 Volume (Fine) -->
+  <!-- Control: "Stem Deck 4 Volume" | Type: Knob | Interaction: Direct | Assignment: CC 33 (Ch 1) | Modifier: M3=1 | Comment: "M3+Filter → Stem 4 Vol Fine" -->
+
+  <!-- M3 + Shift + EQ High → Stem 1 Mute Toggle -->
+  <!-- Control: "Stem Deck 1 Mute" | Type: Button | Interaction: Toggle | Assignment: Note 30 (Ch 1) | Modifier: M1=1,M3=1 | Comment: "M3+Shift+EQHigh → Stem 1 Mute" -->
+  
+  <!-- M3 + Shift + EQ Mid → Stem 2 Mute Toggle -->
+  <!-- Control: "Stem Deck 2 Mute" | Type: Button | Interaction: Toggle | Assignment: Note 31 (Ch 1) | Modifier: M1=1,M3=1 | Comment: "M3+Shift+EQMid → Stem 2 Mute" -->
+  
+  <!-- M3 + Shift + EQ Low → Stem 3 Mute Toggle -->
+  <!-- Control: "Stem Deck 3 Mute" | Type: Button | Interaction: Toggle | Assignment: Note 32 (Ch 1) | Modifier: M1=1,M3=1 | Comment: "M3+Shift+EQLow → Stem 3 Mute" -->
+  
+  <!-- M3 + Shift + Filter → Stem 4 Mute Toggle -->
+  <!-- Control: "Stem Deck 4 Mute" | Type: Button | Interaction: Toggle | Assignment: Note 33 (Ch 1) | Modifier: M1=1,M3=1 | Comment: "M3+Shift+Filter → Stem 4 Mute" -->
+
+  <!-- ===== REMIX DECK NAVIGATION ===== -->
+  <!-- M3 + Loop Encoder → Remix Deck Page Select (1-8) -->
+  <!-- Control: "Remix Deck Page Select" | Type: Encoder | Interaction: Relative | Assignment: CC 40 (Ch 1) | Modifier: M3=1 | Comment: "M3+LoopEnc → Remix Page" -->
+  
+  <!-- M3 + Shift + Loop Encoder → Remix Deck Slot Volume (Current Page) -->
+  <!-- Control: "Remix Deck Slot Volume" | Type: Encoder | Interaction: Relative | Assignment: CC 41 (Ch 1) | Modifier: M1=1,M3=1 | Comment: "M3+Shift+LoopEnc → Slot Vol" -->
+  
+  <!-- M3 + Cue Pads 1-8 → Trigger Slots 1-8 (Current Page) -->
+  <!-- Factory default works, but add LED feedback for current page -->
+  
+  <!-- M3 + Shift + Cue Pads 1-8 → Slot Mute Toggle -->
+  <!-- Control: "Remix Deck Slot 1 Mute" ... Slot 8 Mute | Type: Button | Interaction: Toggle | Assignment: Notes 34-41 (Ch 1) | Modifier: M1=1,M3=1 | Comment: "M3+Shift+Pad → Slot Mute" -->
+
+  <!-- ===== FLUX MODE PER-DECK (Dedicated) ===== -->
+  <!-- M4 + Play (Deck A) → Flux Mode Deck 1 -->
+  <!-- Control: "Deck 1 Flux Mode" | Type: Button | Interaction: Toggle | Assignment: Note 54 (Ch 1) | Modifier: M4=1 | Comment: "M4+Play → Deck 1 Flux" -->
+  
+  <!-- M4 + Play (Deck B) → Flux Mode Deck 2 -->
+  <!-- Control: "Deck 2 Flux Mode" | Type: Button | Interaction: Toggle | Assignment: Note 55 (Ch 1) | Modifier: M4=1 | Comment: "M4+Play → Deck 2 Flux" -->
+  
+  <!-- M4 + Shift + Play (Deck A) → Flux Mode Deck 3 -->
+  <!-- Control: "Deck 3 Flux Mode" | Type: Button | Interaction: Toggle | Assignment: Note 56 (Ch 1) | Modifier: M1=1,M4=1 | Comment: "M4+Shift+Play → Deck 3 Flux" -->
+  
+  <!-- M4 + Shift + Play (Deck B) → Flux Mode Deck 4 -->
+  <!-- Control: "Deck 4 Flux Mode" | Type: Button | Interaction: Toggle | Assignment: Note 57 (Ch 1) | Modifier: M1=1,M4=1 | Comment: "M4+Shift+Play → Deck 4 Flux" -->
+
+  <!-- ===== CUE POINT NAVIGATION (8 Cues on Pads) ===== -->
+  <!-- Factory: Pads 1-8 = Cues 1-8 (Current Deck) -->
+  <!-- M2 + Pads 1-8 = Loop 1/4, 1/2, 1, 2, 4, 8, 16, 32 bars -->
+  <!-- Control: "Deck 1 Loop 1/4" ... "Deck 1 Loop 32" | Type: Button | Interaction: Toggle | Assignment: Notes 64-71 (Ch 1) | Modifier: M2=1 | Comment: "Cue+Pad → Loop Size" -->
+  
+  <!-- M2 + Shift + Pads 1-8 = Fade In/Out, Grid Set/Delete -->
+  <!-- Control: "Deck 1 Fade In" ... | Assignment: Notes 72-79 (Ch 1) | Modifier: M1=1,M2=1 -->
+
+  <!-- ===== BROWSE ENCODER MODES ===== -->
+  <!-- Browse Encoder (Default) → Browser Navigation -->
+  <!-- Shift + Browse Encoder → MIDI Mode Toggle (Hardware) -->
+  <!-- M3 + Browse Encoder → Cycle FX Unit Focus (1→2→3→4) -->
+  <!-- Control: "FX Unit Focus Next" | Type: Button | Interaction: Direct | Assignment: Note 58 (Ch 1) | Modifier: M3=1 | Comment: "M3+BrowseEnc → Cycle FX Unit" -->
+  
+  <!-- M4 + Browse Encoder → Cycle Deck Layout (Club/Festival/Controllerism) -->
+  <!-- Control: "Window Layout Next" | Type: Button | Interaction: Direct | Assignment: Note 59 (Ch 1) | Modifier: M4=1 | Comment: "M4+BrowseEnc → Cycle Layout" -->
+
+  <!-- ===== MASTER SAFETY CONTROLS ===== -->
+  <!-- M4 + Crossfader (Touch) → Master Mono Toggle -->
+  <!-- Control: "Master Mono" | Type: Button | Interaction: Toggle | Assignment: Note 60 (Ch 1) | Modifier: M4=1 | Comment: "M4+XFaderTouch → Master Mono" -->
+  
+  <!-- M4 + Shift + Crossfader → Master Limiter Threshold (Knob) -->
+  <!-- Control: "Master Limiter Threshold" | Type: Knob | Interaction: Direct | Assignment: CC 50 (Ch 1) | Modifier: M1=1,M4=1 | Comment: "M4+Shift+XFader → Limiter Thresh" -->
+
+  <!-- ===== LED FEEDBACK SYSTEM ===== -->
+  <!-- Pad LEDs: Deck Focus (1-4), Flux Active (5-8), Stem/Remix Mode (9-12) -->
+  <!-- FX Button LEDs: Macro Active (Red), Slot On (Green), Mute (Yellow) -->
+  <!-- Encoder Ring: Page Indicator (Remix), Macro Value (FX) -->
+
+</DEVICE>
+
+<!-- 
+  ADVANCED MAPPING ARCHITECTURE NOTES:
+  
+  1. LAYER SYSTEM:
+     - Base: Factory mapping (unchanged)
+     - M1 (Shift): Factory secondary + our FX Slot controls
+     - M2 (Cue): Factory cue + our Loop/Fade layer
+     - M3 (Browse Press): DECK/STEM/REMIX performance layer
+     - M4 (FX Select Hold): MACRO/FLUX/SAFETY layer
+  
+  2. CONFLICT AVOIDANCE:
+     - All custom mappings use Modifiers M3/M4 (unused by factory)
+     - Factory Shift/Cue functions preserved
+     - Test each layer independently before combining
+  
+  3. LED FEEDBACK PRIORITY:
+     - Deck Focus > Flux > Stem/Remix Mode > Macro
+     - Use velocity values for multi-state LEDs
+     - Implement in Controller Manager → Device Setup → MIDI Out assignments
+  
+  4. PERFORMANCE TEMPLATES (Save as separate .tsi):
+     - "Club.tsi" → M3/M4 minimal, focus Deck 1/2
+     - "Festival.tsi" → Full Stem/Remix, all 4 decks active
+     - "Controllerism.tsi" → Remix Deck heavy, Macro FX, Flux all decks
+     - "Streaming.tsi" → Safety macros, Mono/Limiter accessible
+  
+  5. MIGRATION PATH:
+     Intermediate → Advanced:
+     1. Master Intermediate mapping (Level 1 verified)
+     2. Add M3/M4 modifier definitions
+     3. Add 4-deck instant access (M3+DeckToggle)
+     4. Add Macro FX (M4+FX Knobs)
+     5. Add Stem/Remix layers (M3+EQ, M3+LoopEnc)
+     6. Add Flux per-deck (M4+Play)
+     7. Test each addition for 30 min before next
+  
+  6. BACKUP STRATEGY:
+     - Version each .tsi: v1.0, v1.1, v2.0
+     - Changelog in Comments column
+     - Git repo for mappings (recommended)
+-->
