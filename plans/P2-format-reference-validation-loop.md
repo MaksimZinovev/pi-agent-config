@@ -1,7 +1,7 @@
 ---
 id: P2
 type: plan
-status: active
+status: done
 owner: human
 ---
 
@@ -17,6 +17,11 @@ Two changes, both minimally scoped:
 2. **Add explicit workflow steps to SKILL.md** — "read references/format.md before writing" and "run `docfence validate` on the plan, fix errors" as numbered steps in the Quick Reference and Workflow sections.
 
 This beats alternatives because the doctype makes format compliance machine-checkable (not just a suggestion in prose), and the SKILL.md changes make the agent actually follow through.
+
+## Out of Scope
+- **Structure rule**: strict heading-level enforcement — deferred to future `heading_level` rule
+- **CI integration**: automated validation on commit — separate P6 plan
+- **Other doc types**: only `plan` doctype is in scope; exploration/feature types unchanged
 
 ## Steps
 

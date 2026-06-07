@@ -8,6 +8,7 @@ banned_words = ["TODO", "TBD", "placeholder"]
 required_sections = [
   "Context",
   "Approach",
+  "Out of Scope",
   "Steps",
   "Files to Modify",
   "Reuse",
@@ -22,6 +23,7 @@ has_checklist = '^- \[( |x)\]'
 has_source = 'Source:'
 has_file_marker = "(CREATED|UPDATED|DELETED)"
 has_test = "^### Test"
+has_out_of_scope = "^## Out of Scope"
 
 [template_vars]
 id = "PLAN-001"
@@ -33,6 +35,9 @@ fill = "[REPLACE] Why this change is needed — what problem does it solve?"
 
 [template_vars.sections.Approach]
 fill = "[REPLACE] Recommended approach and rationale — why this direction over alternatives?"
+
+[template_vars.sections."Out of Scope"]
+fill = "[REPLACE] Bullet list of excluded items with one-line justification each"
 
 [template_vars.sections.Steps]
 fill = "[REPLACE] Phased checklist items with evidence citations — use - [ ] format"

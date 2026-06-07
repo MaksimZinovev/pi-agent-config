@@ -1,6 +1,6 @@
 # Grounded Planning × Plannotator — Format Reference
 
-Every plan **must** contain these sections. Omitting any is an error. Validate with `docfence validate` before declaring done.
+Every plan **must** contain these sections. Omitting any is an error. Scaffold with `docfence new plan` first, then fill in. Validate with `docfence validate` before declaring done.
 
 ## Required Sections
 
@@ -8,6 +8,7 @@ Every plan **must** contain these sections. Omitting any is an error. Validate w
 |---------|---------|
 | `## Context` | Why this change is needed |
 | `## Approach` | Recommended direction and why, over alternatives |
+| `## Out of Scope` | Bullet list of excluded items with one-line justification each |
 | `## Steps` | `- [ ]` checklist items with evidence citations |
 | `## Files to Modify` | Explicit list: create, update, or delete |
 | `## Reuse` | Existing code, libraries, or patterns to leverage. Include partial reusable extraction suggestions |
@@ -32,7 +33,7 @@ last_validated: ~
 ```spec
 scope: document
 type: plan
-required_sections: [Context, Approach, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line]
+required_sections: [Context, Approach, Out of Scope, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line]
 max_chars: 20000
 banned_words: [TODO, TBD, placeholder]
 match:
@@ -40,6 +41,7 @@ match:
   has_source: 'Source:'
   has_file_marker: "(CREATED|UPDATED|DELETED)"
   has_test: "^### Test"
+  has_out_of_scope: "^## Out of Scope"
 ```
 
 ## Context
@@ -47,6 +49,9 @@ match:
 
 ## Approach
 [Recommended approach and rationale — why this direction over alternatives?]
+
+## Out of Scope
+- **[Item]**: [one-line justification for exclusion]
 
 ## Steps
 
@@ -99,7 +104,7 @@ Expected: [what success looks like]
 ## Validation
 
 Every plan is validated against the `plan` docfence doctype (`.docfence/types/plan.toml`). This enforces:
-- All 8 required sections present
+- All 9 required sections present
 - No banned words (TODO, TBD, placeholder)
 - No unfilled `[REPLACE]` or `df-todo` placeholders
 
@@ -108,14 +113,16 @@ The document-level spec block also enforces structural `match` rules:
 - `has_source` — at least one `**Source**` evidence citation exists
 - `has_file_marker` — at least one CREATED/UPDATED/DELETED marker in Files to Modify
 - `has_test` — at least one `### Test` block in Verification
+- `has_out_of_scope` — `## Out of Scope` section exists
 
 Run `docfence validate plans/<name>.md` after writing. Fix errors until clean. Do not declare the plan done until validation passes.
 
 ## Workflow
 
-1. Spawn planner subagent → it writes `plans/<name>.md`
-2. Run `docfence validate plans/<name>.md` → fix errors until clean
-3. Run `/plannotator-annotate plans/<name>.md` → visual review in browser
+1. Scaffold: `docfence new plan --output plans/<name>.md --id <ID> --title "<title>" --owner <owner>`
+2. Fill scaffolded sections with researched content → replace all `[REPLACE]` and `df-todo` blocks
+3. Run `docfence validate plans/<name>.md` → fix errors until clean
+4. Run `/plannotator-annotate plans/<name>.md` → visual review in browser
 
 ## Combined format (Plannotator structure + grounded evidence)
 

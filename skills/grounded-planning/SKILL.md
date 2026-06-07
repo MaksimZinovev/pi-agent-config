@@ -24,11 +24,12 @@ Research → Plan → Validate. Do not edit code/config/docs during the research
 5. Check sources in priority order; stop when sufficient
 6. Write Evidence Pack (≤8 claims for low/medium; ≤12 for high)
 7. Read references/format.md — internalize required sections before writing
-8. Write the plan with all required sections (see Step 5 table)
-9. Write Bottom Line summary
-10. State gaps explicitly — never hide missing evidence
-11. Validate: every required section present, steps use `- [ ]` format
-12. Run `docfence validate plans/<name>.md`; fix errors until clean
+8. Scaffold: `docfence new plan --output plans/<name>.md --id <ID> --title <title> --owner <owner>`
+9. Fill scaffolded sections with researched content — replace all `[REPLACE]` and `df-todo` blocks
+10. Write Bottom Line summary
+11. State gaps explicitly — never hide missing evidence
+12. Validate: every required section present, steps use `- [ ]` format
+13. Run `docfence validate plans/<name>.md`; fix errors until clean
 ```
 
 ## Source Priority Order
@@ -126,14 +127,23 @@ Use this exact format for each claim:
 - [List all sources actually consulted]
 ```
 
-### Step 5: Write the Grounded Plan
+### Step 5: Scaffold the Plan
 
-The final plan **must** contain all 8 sections and use `- [ ]` checklists for steps, not bold headers. Minimal structure:
+Generate the plan skeleton with correct structure using docfence:
+
+```bash
+docfence new plan --output plans/<name>.md --id <ID> --title "<title>" --owner <owner>
+```
+
+This produces a file with all required sections, spec blocks, and `[REPLACE]` placeholders. Then fill each section with researched content — replacing every `[REPLACE]` and `df-todo` block. Do **not** write plans from scratch; always scaffold first.
+
+The plan **must** contain all 9 sections (including `## Out of Scope`) and use `- [ ]` checklists for steps, not bold headers. Minimal structure:
 
 ```
 # [Task Name]
 ## Context — why this change is needed
 ## Approach — recommended direction and why
+## Out of Scope — bullet list of excluded items with one-line justification each
 ## Steps — phased `- [ ]` checklists with evidence citations
 ## Files to Modify — explicit list (CREATED/UPDATED/DELETED)
 ## Reuse — existing code or patterns to leverage
@@ -152,7 +162,7 @@ Every plan ends with a Bottom Line. See `references/format.md` for the format.
 
 ### Step 7: Validate with docfence
 
-Run `docfence validate plans/<name>.md` on the finished plan. Fix every error and re-run until the file validates clean. The `plan` doctype enforces all 8 required sections, banned words, and placeholder checks. If docfence reports missing sections, add them. If it finds banned words or unfilled placeholders, fix them. Do not declare the plan done until validation passes.
+Run `docfence validate plans/<name>.md` on the finished plan. Fix every error and re-run until the file validates clean. The `plan` doctype enforces all 9 required sections, banned words, and placeholder checks. If docfence reports missing sections, add them. If it finds banned words or unfilled placeholders, fix them. Do not declare the plan done until validation passes.
 
 ## Hard Requirements
 
@@ -165,12 +175,14 @@ These are non-negotiable. Violating any of these makes the output unreliable.
 - **Do not skip Phase 1** (evidence) and jump to Phase 2 (planning)
 - **Do not produce plan steps without evidence citations**
 - **Do not use `**Step N**:` bold headers** — use `- [ ]` checklist items under `## Steps`
-- **Do not omit required sections** — Context, Approach, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line must all appear
+- **Do not omit required sections** — Context, Approach, Out of Scope, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line must all appear
 - **Do not query all sources by default** — start local and escalate only as needed
 - **If evidence is insufficient**: ask the user for the exact missing observation (command output, log, file snippet, clarification). Do NOT fabricate claims
 - **If sources conflict**: record both claims, propose a discriminating check, and ask the user to verify
 - **If the user says "just go ahead"**: switch to low uncertainty mode, clearly note what was not verified
 - **Do not skip `docfence validate`** — every plan must pass validation before delivery
+- **Do not write plans from scratch** — always scaffold with `docfence new plan` first, then fill in
+- **Do not leave `## Out of Scope` vague** — each excluded item needs a one-line justification (`- **X**: because [reason]`)
 
 ## Stop Conditions
 
