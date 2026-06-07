@@ -15,7 +15,7 @@
   "enabledModels": [
     "ollama/glm-5.1:cloud",
     "ollama/minimax-m2.7:cloud",
-    "ollama/minimax-m2.7:cloud",
+    "ollama/nemotron-3-ultra:cloud",
     "ollama/deepseek-v4-pro:cloud",
     "ollama/kimi-k2.5:cloud",
     "ollama/minimax-m3:cloud",
@@ -86,9 +86,7 @@
         "model": "ollama/glm-5.1:cloud"
       },
       "researcher": {
-        "fallbackModels": [
-          "ollama/glm-5.1:cloud"
-        ],
+        "fallbackModels": ["ollama/glm-5.1:cloud"],
         "inheritSkills": true,
         "model": "ollama/minimax-m2.7:cloud",
         "skills": [
@@ -102,9 +100,7 @@
         "model": "ollama/glm-5.1:cloud"
       },
       "scout": {
-        "fallbackModels": [
-          "ollama/glm-5.1:cloud"
-        ],
+        "fallbackModels": ["ollama/glm-5.1:cloud"],
         "inheritSkills": true,
         "model": "ollama/minimax-m2.7:cloud"
       },
