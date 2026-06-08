@@ -334,15 +334,6 @@ export default function (pi: ExtensionAPI) {
 				const stepCfg = currentStep();
 				if (stepCfg) {
 					prompt += "\n\n" + stepCfg.systemPrompt;
-					// Steer agent to complete current orient step before doing anything else
-					const msg = config.sessionStartMessage
-						.replace("{step}", String(step))
-						.replace("{total}", String(TOTAL_STEPS))
-						.replace("{label}", stepCfg.label);
-					pi.sendMessage(
-						{ customType: "orient-steer", content: msg, display: true },
-						{ triggerTurn: true, deliverAs: "steer" },
-					);
 				}
 			} else {
 				// Gate complete — inject completion prompt from last step to reinforce skill usage
