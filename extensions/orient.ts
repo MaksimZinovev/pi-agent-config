@@ -33,6 +33,7 @@ interface StepConfig {
 interface OrientConfig {
 	skills: SkillConfig[];
 	sessionStartMessage: string;
+	postGateTour: string;
 	steps: StepConfig[];
 }
 
@@ -71,7 +72,7 @@ try {
 	);
 } catch (e) {
 	console.error("[orient] Could not read config from", CONFIG_PATH, e);
-	config = { skills: [], sessionStartMessage: "", steps: [] };
+	config = { skills: [], sessionStartMessage: "", postGateTour: "", steps: [] };
 }
 
 const TOTAL_STEPS = config.steps.length;
@@ -165,10 +166,19 @@ function advanceStep(
 	lastSteeredStep = 0;
 	persistStep(pi);
 	updateStatus(ctx);
-	pi.sendMessage(
-		{ customType: "orient-step", content: message, display: true },
-		{ triggerTurn: true, deliverAs: "steer" },
-	);
+	// If gate just completed, send post-gate skill tour instead of step advance
+	if (newStep > TOTAL_STEPS && config.postGateTour) {
+		const stepPrefix = message ? message + " " : "";
+		pi.sendMessage(
+			{ customType: "orient-tour", content: stepPrefix + config.postGateTour, display: true },
+			{ triggerTurn: true, deliverAs: "steer" },
+		);
+	} else {
+		pi.sendMessage(
+			{ customType: "orient-step", content: message, display: true },
+			{ triggerTurn: true, deliverAs: "steer" },
+		);
+	}
 }
 
 // --- Debounced block steer ---
