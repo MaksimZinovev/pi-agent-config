@@ -170,7 +170,11 @@ function advanceStep(
 	if (newStep > TOTAL_STEPS && config.postGateTour) {
 		const stepPrefix = message ? message + " " : "";
 		pi.sendMessage(
-			{ customType: "orient-tour", content: stepPrefix + config.postGateTour, display: true },
+			{
+				customType: "orient-tour",
+				content: stepPrefix + config.postGateTour,
+				display: true,
+			},
 			{ triggerTurn: true, deliverAs: "steer" },
 		);
 	} else {

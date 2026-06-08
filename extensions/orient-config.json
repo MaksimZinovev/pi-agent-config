@@ -10,11 +10,11 @@
     }
   ],
   "sessionStartMessage": "Orient quickly on this codebase. Step {step}/{total}: {label}. Do it now — don't summarize, just run the command and proceed.",
-  "postGateTour": "Skill tour — before confirming readiness, experience these capabilities: (1) Run `cx symbols <some-file>` to navigate definitions and references for a file from the overview. (2) Run `ck \"<a relevant term from the codebase>\" .` for semantic code search. These demonstrate cx's symbol navigation and ck's semantic search — the two most powerful capabilities beyond overview and indexing. Then acknowledge: you've learned the cx and ck skills and will use them per their instructions and AGENTS.md escalation hierarchy for all code search/exploration tasks. Do NOT use grep/find/rg/ack/ag/fd when cx or ck can do the job.",
+  "postGateTour": "Skill tour — before confirming readiness, experience these capabilities: (1) Run `cx symbols --kind fn` (or --kind interface, --kind class) to navigate symbol definitions across the project. (2) Run `ck \"<a short relevant term from the codebase>\" .` for semantic code search — use short specific terms, not long phrases. These demonstrate cx's symbol navigation and ck's semantic search — the two most powerful capabilities beyond overview and indexing. Then acknowledge: you've learned the cx and ck skills and will use them per their instructions and AGENTS.md escalation hierarchy for all code search/exploration tasks. Do NOT use grep/find/rg/ack/ag/fd when cx or ck can do the job.",
   "steps": [
     {
       "label": "Run `cx overview .` to learn codebase orientation",
-      "systemPrompt": "[ORIENT GATE] You must run `cx overview .` before using any search tools. grep, find, rg, ack, ag, fd, and ck are BLOCKED until you complete this step. Do NOT produce a lengthy summary after cx overview — proceed to the next tool. cx provides: `overview` (structures), `search` (regex over indexed files), `symbols` (definitions/references), `call-graph`, `depends`.",
+      "systemPrompt": "[ORIENT GATE] You must run `cx overview .` before using any search tools. grep, find, rg, ack, ag, fd, and ck are BLOCKED until you complete this step. After cx overview, do NOT run any other commands — wait for the next step. cx provides: `overview` (structures), `search` (regex over indexed files), `symbols --kind/--name/--file` (definitions/references), `call-graph`, `depends`.",
       "blockMessage": "⚠️ [Orient 1/2] Run `cx overview .` first. Search tools blocked until done.",
       "detectCommandRegex": "\\bcx\\b.*\\boverview\\b",
       "advanceMessage": "✅ [Orient 1/2] Complete. Now run `ck --index .` (or `ck --status` if already indexed).",
@@ -25,8 +25,8 @@
     },
     {
       "label": "Run `ck --index .` (or `ck --status`) to prepare semantic search",
-      "systemPrompt": "[ORIENT GATE] Run `ck --index .` (or `ck --status` if already indexed) next. grep, find, rg, ack, ag, fd are still BLOCKED. Be concise — just run the command. ck provides: `ck \"semantic query\" path` for semantic code search, `ck --status` to check index, `ck --watch` for continuous indexing.",
-      "completionPrompt": "[ORIENT COMPLETE] You have learned the cx and ck skills. For the rest of this session you MUST: (1) Use cx/ck as primary code search/exploration tools. (2) Follow escalation hierarchy in AGENTS.md: cx → ck → grep/find. (3) Never use grep/find/rg/ack/ag/fd when cx or ck can accomplish the task. (4) cx provides: overview, search, symbols, call-graph, depends. (5) ck provides: semantic search (`ck \"query\" path`), status, index, watch. (6) Read reference files in skill folders for detailed usage patterns when needed.",
+      "systemPrompt": "[ORIENT GATE] Run `ck --index .` (or `ck --status` if already indexed) next. grep, find, rg, ack, ag, fd are still BLOCKED. Be concise — just run the command, do nothing else. ck provides: `ck \"query\" path` for semantic code search (use short specific terms), `ck --status` to check index, `ck --watch` for continuous indexing.",
+      "completionPrompt": "[ORIENT COMPLETE] You have learned the cx and ck skills. For the rest of this session you MUST: (1) Use cx/ck as primary code search/exploration tools. (2) Follow escalation hierarchy in AGENTS.md: cx → ck → grep/find. (3) Never use grep/find/rg/ack/ag/fd when cx or ck can accomplish the task. (4) cx provides: overview, search, `symbols --kind/--name/--file`, call-graph, depends. (5) ck provides: semantic search (`ck \"short-query\" path`), status, index, watch. (6) Read reference files in skill folders for detailed usage patterns when needed.",
       "blockMessage": "⚠️ [Orient 2/2] Run `ck --index .` (or `ck --status`) next. grep/find still blocked.",
       "detectCommandRegex": "\\bck\\s+.*--(?:index|status)\\b",
       "advanceMessage": "",
