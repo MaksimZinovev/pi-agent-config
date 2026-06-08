@@ -25,9 +25,10 @@
     {
       "label": "Run `ck --index .` (or `ck --status`) to prepare semantic search",
       "systemPrompt": "[ORIENT GATE] Run `ck --index .` (or `ck --status` if already indexed) next. grep, find, rg, ack, ag, fd are still BLOCKED. Be concise — just run the command.",
+      "completionPrompt": "[ORIENT COMPLETE] You have learned the cx and ck skills. For the rest of this session you MUST: (1) Use cx/ck as primary code search/exploration tools. (2) Follow escalation hierarchy in AGENTS.md: cx → ck → grep/find. (3) Never use grep/find/rg/ack/ag/fd when cx or ck can accomplish the task. (4) Read reference files in skill folders for detailed usage patterns when needed. Acknowledge this commitment now.",
       "blockMessage": "⚠️ [Orient 2/2] Run `ck --index .` (or `ck --status`) next. grep/find still blocked.",
       "detectCommandRegex": "\\bck\\s+.*--(?:index|status)\\b",
-      "advanceMessage": "✅ [Orient 2/2] Complete! All tools unblocked. Use cx/ck per AGENTS.md escalation hierarchy.",
+      "advanceMessage": "✅ [Orient 2/2] Complete! All tools unblocked. Acknowledge that you have learned the cx and ck skills, confirm you will use them per their instructions and AGENTS.md escalation hierarchy for all code search/exploration tasks in this session. Do NOT use grep/find/rg/ack/ag/fd when cx or ck can do the job.",
       "retryMessage": "",
       "blockTools": ["grep", "find"],
       "blockBashPatterns": ["grep", "rg", "ack", "ag", "find", "fd"],

@@ -27,6 +27,7 @@ interface StepConfig {
 	blockTools: string[];
 	blockBashPatterns: string[];
 	blockNativeTools: string[];
+	completionPrompt?: string;
 }
 
 interface OrientConfig {
@@ -328,6 +329,12 @@ export default function (pi: ExtensionAPI) {
 						{ customType: "orient-steer", content: msg, display: true },
 						{ triggerTurn: true, deliverAs: "steer" },
 					);
+				}
+			} else {
+				// Gate complete — inject completion prompt from last step to reinforce skill usage
+				const lastStep = config.steps[config.steps.length - 1];
+				if (lastStep?.completionPrompt) {
+					prompt += "\n\n" + lastStep.completionPrompt;
 				}
 			}
 
