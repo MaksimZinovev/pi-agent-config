@@ -288,7 +288,7 @@ export default function (pi: ExtensionAPI) {
 		"TOTAL_STEPS=",
 		TOTAL_STEPS,
 	);
-	// --- session_start: restore state + steer agent to orient ---
+	// --- session_start: restore state only (steer deferred to resources_discover to avoid race) ---
 	pi.on("session_start", (_event: any, ctx: ExtensionContext) => {
 		try {
 			restoreStep(ctx);
@@ -301,7 +301,14 @@ export default function (pi: ExtensionAPI) {
 				"skills loaded=",
 				Object.keys(skillContents).join(","),
 			);
+		} catch (e) {
+			console.error(`[orient] session_start error: ${e}`);
+		}
+	});
 
+	// --- resources_discover: send orient steer after all session_start injections have settled ---
+	pi.on("resources_discover", async (_event: any, ctx: ExtensionContext) => {
+		try {
 			if (step <= TOTAL_STEPS) {
 				const stepCfg = currentStep();
 				if (!stepCfg) return;
@@ -309,13 +316,24 @@ export default function (pi: ExtensionAPI) {
 					.replace("{step}", String(step))
 					.replace("{total}", String(TOTAL_STEPS))
 					.replace("{label}", stepCfg.label);
+				console.error(
+					"[orient] resources_discover: sending steer. step=",
+					step,
+					"label=",
+					stepCfg.label,
+				);
 				pi.sendMessage(
 					{ customType: "orient-start", content: msg, display: true },
 					{ triggerTurn: true, deliverAs: "steer" },
 				);
+			} else {
+				console.error(
+					"[orient] resources_discover: gate already complete, no steer sent. step=",
+					step,
+				);
 			}
 		} catch (e) {
-			console.error(`[orient] session_start error: ${e}`);
+			console.error(`[orient] resources_discover error: ${e}`);
 		}
 	});
 
