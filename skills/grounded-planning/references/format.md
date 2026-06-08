@@ -1,6 +1,6 @@
 # Grounded Planning × Plannotator — Format Reference
 
-Every plan **must** contain these sections. Omitting any is an error. Scaffold with `docfence new plan` first, then fill in. Validate with `docfence validate` before declaring done.
+Every plan must contain these sections. Omitting any is an error. Scaffold with `docfence new plan` first, then fill in. Validate with `docfence validate` before declaring done.
 
 ## Required Sections
 
@@ -134,12 +134,12 @@ Every plan is validated against the `plan` docfence doctype (`.docfence/types/pl
 
 The document-level spec block also enforces structural `match` rules:
 - `has_checklist` — at least one `- [ ]` or `- [x]` step exists
-- `has_source` — at least one `**Source**` evidence citation exists
+- `has_source` — at least one `Source` evidence citation exists
 - `has_file_marker` — at least one CREATED/UPDATED/DELETED marker in Files to Modify
 - `has_test` — at least one `# Test N:` label in Verification
 - `has_out_of_scope` — `## Out of Scope` section exists
 - `has_tools_and_skills` — `## Tools & Skills` section exists
-- `has_ynp_format` — at least one Y/N/P audit entry (`- **name**: Yes/No/Possibly`)
+- `has_ynp_format` — at least one Y/N/P audit entry (`- name: Yes/No/Possibly`)
 
 Run `docfence validate plans/<name>.md` after writing. Fix errors until clean. Do not declare the plan done until validation passes.
 
@@ -153,12 +153,12 @@ Each section also has its own validation rules that catch common planner failure
 | Tools & Skills | `banned_words`: N/A, n/a; `match`: ≥3 Y/N/P entries required | Lazy cop-outs like "N/A"; skipping tool consideration |
 | Approach | `banned_words`: Q1:/Q2:/**Q/Question: formats; `max_chars`: 800; `match`: must mention alternatives (alternative/instead of/rather than/compared to) | Q&A decision format; 40-line design docs; no comparison with alternatives |
 | Out of Scope | `banned_words`: None./N/A/Not applicable cop-outs; `match`: must have ≥2 bold-item justifications | Lazy "None." dismissal; no genuine scope boundaries |
-| Steps | `banned_words`: **Step/**Task/**Phase bold headers; `match`: evidence citations per step `(Source...)`, ≥3 checklist items | Prose paragraphs; `**Task 1:**` format; 1-step "plans"; no evidence trail |
+| Steps | `banned_words`: Step/Task/Phase bold headers; `match`: evidence citations per step `(Source...)`, ≥3 checklist items | Prose paragraphs; `Task 1:**` format; 1-step "plans"; no evidence trail |
 | Files to Modify | `match`: must have `\`path\`: CREATED/UPDATED/DELETED` entries | Files mentioned in prose instead of explicit list |
 | Reuse | `banned_words`: None./N/A cop-outs; `match`: must have bold-labeled reuse items | "Nothing to reuse" laziness when patterns/libraries exist |
-| Evidence Pack | `banned_words`: **Source**:/**Source:** formats; `match`: must have `**Claim**:` entries and `**Confidence**:` scores | Bold-formatted Source that bypasses match rule; claims without confidence |
+| Evidence Pack | `banned_words`: Source:/Source: formats; `match`: must have `Claim:` entries and `Confidence:` scores | Bold-formatted Source that bypasses match rule; claims without confidence |
 | Verification | `match`: must have `` ```bash `` blocks, `# Expected:` results, ≥2 `# Test N:` labels | Prose "run the tests" instead of actual commands; single-test "verification" |
-| Bottom Line | `match`: must have `**Recommendation**:` label | Vague "should work" without explicit proceed/hold/redirect decision |
+| Bottom Line | `match`: must have `Recommendation:` label | Vague "should work" without explicit proceed/hold/redirect decision |
 
 ## Workflow
 
@@ -186,8 +186,8 @@ docs/decisions/          ← GIT-TRACKED. Gap analyses, decision context, ADRs
 .plannotator/            ← AUTO-MANAGED. Archived plan versions
 ```
 
-**Key rule**: Future-you needs it to understand *why* → `docs/` (tracked). Served its purpose → `.local/` (ignored).
-**Linking**: Plans reference deeper research via `(Sources: .local/<key>/evidence-pack.md)`.
+Key rule: Future-you needs it to understand *why* → `docs/` (tracked). Served its purpose → `.local/` (ignored).
+Linking: Plans reference deeper research via `(Sources: .local/<key>/evidence-pack.md)`.
 
 ## Document map (append to every plan)
 

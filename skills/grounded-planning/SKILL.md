@@ -8,7 +8,7 @@ description: |
 
 Research first, then plan — never guess when evidence is available.
 
-**Announce at start:** "I'm using grounded-planning to research evidence before planning."
+Announce at start: "I'm using grounded-planning to research evidence before planning."
 
 ## Scope
 
@@ -50,7 +50,7 @@ Local ($LLMSTXT_HOME) → Context7 → DeepWiki → GitHub MCP → Web Search �
 | Web Search | `web_search` | Need version compatibility, latest updates, community answers | Use `freshness` filter for recent info |
 | Web Fetch | `web_fetch` | Need content from a specific URL found during earlier searches | Verify URL came from a prior source |
 
-**Key rule**: Every claim in the plan must trace back to at least one source. Start local and specific. Only escalate to broader sources when local/specific sources lack the answer.
+Key rule: Every claim in the plan must trace back to at least one source. Start local and specific. Only escalate to broader sources when local/specific sources lack the answer.
 
 ### DeepWiki Fallback Workflow
 
@@ -67,11 +67,11 @@ Before researching, assess how deep the evidence needs to be:
 
 | Uncertainty Level | Signs | Action |
 |-------------------|-------|--------|
-| **Low** | Well-known pattern, official docs available, routine task | Quick sanity check: 1–2 sources, 1 Context7 query |
-| **Medium** | Unfamiliar API, version question, integration concern | Standard research: 2–3 sources, up to 3 queries |
-| **High** | New framework, conflicting info, architecture decision | Deep research: all relevant sources, up to 5 queries across multiple sources |
+| Low | Well-known pattern, official docs available, routine task | Quick sanity check: 1–2 sources, 1 Context7 query |
+| Medium | Unfamiliar API, version question, integration concern | Standard research: 2–3 sources, up to 3 queries |
+| High | New framework, conflicting info, architecture decision | Deep research: all relevant sources, up to 5 queries across multiple sources |
 
-**Announce the level**: "Uncertainty: [low/medium/high] — plan: [brief research scope]"
+Announce the level: "Uncertainty: [low/medium/high] — plan: [brief research scope]"
 
 ### Step 2: Define the Unknown
 
@@ -88,14 +88,14 @@ If there are multiple unknowns, list them all before researching. Tackle the mos
 
 Follow the source priority order. For each source:
 
-1. **Local** — Check `$LLMSTXT_HOME` for relevant docs
-2. **Context7** — Resolve library, query docs (start page=1, mode=info unless code examples needed)
-3. **DeepWiki** — Ask question about repo; if it fails, follow the fallback workflow above
-4. **GitHub** — Search code, issues, PRs for the specific question
-5. **Web Search** — General queries, version compatibility, latest updates
-6. **Web Fetch** — Only for URLs found in earlier results
+1. Local — Check `$LLMSTXT_HOME` for relevant docs
+2. Context7 — Resolve library, query docs (start page=1, mode=info unless code examples needed)
+3. DeepWiki — Ask question about repo; if it fails, follow the fallback workflow above
+4. GitHub — Search code, issues, PRs for the specific question
+5. Web Search — General queries, version compatibility, latest updates
+6. Web Fetch — Only for URLs found in earlier results
 
-**Stay tight:**
+Stay tight:
 - Start with page=1 for Context7
 - Max 3 Evidence Pack queries per question at low/medium uncertainty
 - Max 5 at high uncertainty
@@ -135,9 +135,9 @@ Generate the plan skeleton with correct structure using docfence:
 docfence new plan --output plans/<name>.md --id <ID> --title "<title>" --owner <owner>
 ```
 
-This produces a file with all required sections, spec blocks, and `[REPLACE]` placeholders. Then fill each section with researched content — replacing every `[REPLACE]` and `df-todo` block. Do **not** write plans from scratch; always scaffold first.
+This produces a file with all required sections, spec blocks, and `[REPLACE]` placeholders. Then fill each section with researched content — replacing every `[REPLACE]` and `df-todo` block. Do not write plans from scratch; always scaffold first.
 
-The plan **must** contain all 10 sections (including `## Tools & Skills` and `## Out of Scope`) and use `- [ ]` checklists for steps, not bold headers. Minimal structure:
+The plan must contain all 10 sections (including `## Tools & Skills` and `## Out of Scope`) and use `- [ ]` checklists for steps, not bold headers. Minimal structure:
 
 ```
 # [Task Name]
@@ -153,7 +153,7 @@ The plan **must** contain all 10 sections (including `## Tools & Skills` and `##
 ## Bottom Line — confidence, key risk, gaps, recommendation
 ```
 
-⚠️ **Read `references/format.md` before writing the plan.** It defines the exact template, required sections, placeholder format, and directory layout. Do not write from memory — read it first.
+⚠️ Read `references/format.md` before writing the plan. It defines the exact template, required sections, placeholder format, and directory layout. Do not write from memory — read it first.
 
 See `references/format.md` for the full template with examples and directory layout.
 
@@ -169,29 +169,29 @@ Run `docfence validate plans/<name>.md` on the finished plan. Fix every error an
 
 These are non-negotiable. Violating any of these makes the output unreliable.
 
-- **Do not claim you read a URL** unless it came from a source output
-- **Do not infer runtime results** without a log/trace/config snippet
-- **Do not propose code diffs** in the Evidence Pack — that's for the Plan phase
-- **Do not paste entire documentation pages** — extract only the relevant claim
-- **Do not skip Phase 1** (evidence) and jump to Phase 2 (planning)
-- **Do not produce plan steps without evidence citations**
-- **Do not use `**Step N**:` bold headers** — use `- [ ]` checklist items under `## Steps`
-- **Do not omit required sections** — Context, Tools & Skills, Approach, Out of Scope, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line must all appear
-- **Do not query all sources by default** — start local and escalate only as needed
-- **If evidence is insufficient**: ask the user for the exact missing observation (command output, log, file snippet, clarification). Do NOT fabricate claims
-- **If sources conflict**: record both claims, propose a discriminating check, and ask the user to verify
-- **If the user says "just go ahead"**: switch to low uncertainty mode, clearly note what was not verified
-- **Do not skip `docfence validate`** — every plan must pass validation before delivery
-- **Do not write plans from scratch** — always scaffold with `docfence new plan` first, then fill in
-- **Do not leave `## Out of Scope` vague** — each excluded item needs a one-line justification (`- **X**: because [reason]`)
-- **Do not skip the Y/N/P audit** — `## Tools & Skills` must list relevant tools/skills with `Yes` (must use), `No` (not needed, with justification), or `Possibly` (might use) labels
+- Do not claim you read a URL unless it came from a source output
+- Do not infer runtime results without a log/trace/config snippet
+- Do not propose code diffs in the Evidence Pack — that's for the Plan phase
+- Do not paste entire documentation pages — extract only the relevant claim
+- Do not skip Phase 1 (evidence) and jump to Phase 2 (planning)
+- Do not produce plan steps without evidence citations
+- Do not use `Step N:` bold headers — use `- [ ]` checklist items under `## Steps`
+- Do not omit required sections — Context, Tools & Skills, Approach, Out of Scope, Steps, Files to Modify, Reuse, Evidence Pack, Verification, Bottom Line must all appear
+- Do not query all sources by default — start local and escalate only as needed
+- If evidence is insufficient: ask the user for the exact missing observation (command output, log, file snippet, clarification). Do NOT fabricate claims
+- If sources conflict: record both claims, propose a discriminating check, and ask the user to verify
+- If the user says "just go ahead": switch to low uncertainty mode, clearly note what was not verified
+- Do not skip `docfence validate` — every plan must pass validation before delivery
+- Do not write plans from scratch — always scaffold with `docfence new plan` first, then fill in
+- Do not leave `## Out of Scope` vague — each excluded item needs a one-line justification (`- X: because [reason]`)
+- Do not skip the Y/N/P audit — `## Tools & Skills` must list relevant tools/skills with `Yes` (must use), `No` (not needed, with justification), or `Possibly` (might use) labels
 
 ## Stop Conditions
 
-- **Evidence sufficient**: Proceed to planning with cited confidence
-- **Evidence insufficient**: Ask for the exact missing observation — don't guess
-- **Sources conflict**: Record both claims and propose a discriminating check
-- **User overrides**: Switch to low uncertainty, note unverified items
+- Evidence sufficient: Proceed to planning with cited confidence
+- Evidence insufficient: Ask for the exact missing observation — don't guess
+- Sources conflict: Record both claims and propose a discriminating check
+- User overrides: Switch to low uncertainty, note unverified items
 
 ## When to Escalate Uncertainty
 

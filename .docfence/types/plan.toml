@@ -26,7 +26,7 @@ has_file_marker = "(CREATED|UPDATED|DELETED)"
 has_test = '# Test \d'
 has_out_of_scope = "^## Out of Scope"
 has_tools_and_skills = '^## Tools & Skills'
-has_ynp_format = '^- \*\*[^*]+\*\*: (Yes|No|Possibly)\b'
+has_ynp_format = '^- .+: (Yes|No|Possibly)\b'
 
 [template_vars]
 id = "PLAN-001"
@@ -48,11 +48,11 @@ banned_words = [
 has_problem = '(problem|issue|bug|break|fail|cannot|does.not|unable)'
 
 [template_vars.sections."Tools & Skills"]
-fill = "[REPLACE] List top ~10 relevant tools/skills: **name**: Yes / No (why not needed) / Possibly (when you'd use it). Minimum 3 entries. No N/A."
+fill = "[REPLACE] List Pi skills from pi --skills and tools from pi --tools: skill-name: Yes / No (reason) / Possibly (when). Minimum 3 entries. No N/A. No file references. No dismissive 'No' — justify by task scope."
 banned_words = ["N/A", "n/a"]
 
 [template_vars.sections."Tools & Skills".match]
-min_3_ynp = '^- \*\*[^*]+\*\*: (Yes|No|Possibly)\b'
+min_3_ynp = '^- .+: (Yes|No|Possibly)\b'
 
 [template_vars.sections.Approach]
 fill = "[REPLACE] Recommended direction and rationale — why this over alternatives? Max ~10 lines."
@@ -63,41 +63,41 @@ banned_words = ["Q1:", "Q2:", "Q3:", "**Q", "Question:"]
 has_alternative = '(alternative|instead of|rather than|compared to|over:|vs[.])'
 
 [template_vars.sections."Out of Scope"]
-fill = "[REPLACE] Bullet list of excluded items with one-line justification: **item**: reason. Minimum 2 items. No 'None.' cop-outs."
+fill = "[REPLACE] Bullet list of excluded items with one-line justification: item: reason. Minimum 2 items. No 'None.' cop-outs."
 banned_words = ["Nothing.", "None.", "N/A", "n/a", "Not applicable"]
 
 [template_vars.sections."Out of Scope".match]
-has_justification = '^- \*\*[^*]+\*\*:'
-min_2_exclusions = '^- \*\*[^*]+\*\*:'
+has_justification = '^- .+:'
+min_2_exclusions = '^- .+:'
 
 [template_vars.sections.Steps]
-fill = "[REPLACE] Phased - [ ] checklist items with (Source: ...) citations per step. Minimum 3 steps. No **Step**/**Task**/**Phase** bold headers."
+fill = "[REPLACE] Phased - [ ] checklist items with (Source: ...) citations per step. Minimum 3 steps. No Step/Task/Phase bold headers."
 banned_words = ["**Step", "**Task", "**Phase"]
 
 [template_vars.sections.Steps.match]
 has_step_evidence = '^- \[ \].*\(Source'
 min_3_steps = '^- \[( |x)\]'
 
-[template_vars.sections."Files to Modify"]
+[template_vars.segments."Files to Modify"]
 fill = "[REPLACE] Tree of files to modify with inline comments: `path/to/file` — CREATED/UPDATED/DELETED: what changes and why"
 
 [template_vars.sections."Files to Modify".match]
 has_file_entry = '^- `[^`]+` — (CREATED|UPDATED|DELETED)'
 
 [template_vars.sections.Reuse]
-fill = "[REPLACE] Existing code, libraries, or patterns to reuse. No 'None.' — always identify something. **name**: how it's reused."
+fill = "[REPLACE] Existing code, libraries, or patterns to reuse. No 'None.' — always identify something. name: how it's reused."
 banned_words = ["None.", "N/A", "Nothing to reuse", "No reuse"]
 
 [template_vars.sections.Reuse.match]
-has_reuse_item = '^- \*\*[^*]+\*\*:'
+has_reuse_item = '^- .+:'
 
 [template_vars.sections."Evidence Pack"]
-fill = "[REPLACE] Claims with Source, Confidence, Implication — cite every claim. Use bare Source: not **Source**:. Minimum 2 claims with **Confidence** scores."
+fill = "[REPLACE] Claims with Source, Confidence, Implication — cite every claim. Use bare Source: not bold. Minimum 2 claims with Confidence scores."
 banned_words = ["**Source**:", "**Source:**"]
 
 [template_vars.sections."Evidence Pack".match]
-has_evidence_claim = '^- \*\*Claim\*:'
-has_confidence = '\*\*Confidence\*\*:'
+has_evidence_claim = '^- Claim:'
+has_confidence = 'Confidence:'
 
 [template_vars.sections.Verification]
 fill = "[REPLACE] Bash code blocks with # Test N: labels and # Expected: results. Prefer inline # comments where possible. Include end-user testing. Minimum 2 tests."
@@ -108,7 +108,7 @@ has_expected = '# Expected:'
 min_2_tests = '# Test \d'
 
 [template_vars.sections."Bottom Line"]
-fill = "[REPLACE] Per-step confidence, key risk, gaps, and **Recommendation**: proceed/hold/redirect."
+fill = "[REPLACE] Per-step confidence, key risk, gaps, and Recommendation: proceed/hold/redirect."
 
 [template_vars.sections."Bottom Line".match]
-has_recommendation = '\*\*Recommendation\*\*:'
+has_recommendation = 'Recommendation:'

@@ -45,15 +45,15 @@ type: plan
 max_chars: 20000
 banned_words: [N/A, n/a]
 match:
-  min_3_ynp: '^- \*\*[^*]+\*\*: (Yes|No|Possibly)\b'
+  min_3_ynp: '^- .+: (Yes|No|Possibly)\b'
 ```
 
-- **Pi extension docs**: Yes — primary source for lifecycle events, sendMessage API, and triggerTurn behavior
-- **systematic-debugging**: Yes — root cause investigation already completed (session logs, Pi runtime source)
-- **grounded-planning**: Yes — used to structure this plan with evidence
-- **cx/ck**: No — code search not needed for this fix (small scope, known files)
-- **Pi agent-session.js source**: Yes — read to understand triggerTurn, steer, and abort mechanics
-- **docfence**: Yes — plan validation
+- Pi extension docs: Yes — primary source for lifecycle events, sendMessage API, and triggerTurn behavior
+- systematic-debugging: Yes — root cause investigation already completed (session logs, Pi runtime source)
+- grounded-planning: Yes — used to structure this plan with evidence
+- cx/ck: No — code search not needed for this fix (small scope, known files)
+- Pi agent-session.js source: Yes — read to understand triggerTurn, steer, and abort mechanics
+- docfence: Yes — plan validation
 
 ## Approach
 
@@ -74,14 +74,14 @@ type: plan
 max_chars: 20000
 banned_words: [Nothing., None., N/A, n/a, Not applicable]
 match:
-  has_justification: '^- \*\*[^*]+\*\*:'
-  min_2_exclusions: '^- \*\*[^*]+\*\*:'
+  has_justification: '^- .+:'
+  min_2_exclusions: '^- .+:'
 ```
 
-- **Changing other extensions' startup behavior**: pi-session-search-primer and plannotator are external; we cannot control their timing. Instead we avoid the race.
-- **Removing proactive orientation**: User explicitly wants the agent to orient without user typing.
-- **Changing the orient gate logic**: Steps, blocking, skill injection all stay the same. Only the startup timing changes.
-- **Adding /orient skip command**: Not in scope for this fix (separate future work).
+- Changing other extensions' startup behavior: pi-session-search-primer and plannotator are external; we cannot control their timing. Instead we avoid the race.
+- Removing proactive orientation: User explicitly wants the agent to orient without user typing.
+- Changing the orient gate logic: Steps, blocking, skill injection all stay the same. Only the startup timing changes.
+- Adding /orient skip command: Not in scope for this fix (separate future work).
 
 ## Steps
 
@@ -96,29 +96,29 @@ match:
 
 ### Phase 1: Move steer from session_start to resources_discover
 
-- [ ] **Move orient steer from `session_start` to `resources_discover`**: In orient.ts, add `pi.on("resources_discover", ...)` handler. Move the `sendMessage({triggerTurn: true, deliverAs: "steer"})` call from session_start to this handler. Keep `restoreStep()` and `updateStatus()` in session_start (they need to run early for the status line). The resources_discover handler should check `step <= TOTAL_STEPS` before sending the steer.
+- [ ] Move orient steer from `session_start` to `resources_discover`: In orient.ts, add `pi.on("resources_discover", ...)` handler. Move the `sendMessage({triggerTurn: true, deliverAs: "steer"})` call from session_start to this handler. Keep `restoreStep()` and `updateStatus()` in session_start (they need to run early for the status line). The resources_discover handler should check `step <= TOTAL_STEPS` before sending the steer.
   - Evidence: Pi lifecycle shows `session_start` → `resources_discover` → agent processing. All session_start injections complete before resources_discover fires. (Source: Pi extensions docs + agent-session.js source)
   - Confidence: 0.85
   - Details: `pi.on("resources_discover", async (event, ctx) => { if (step <= TOTAL_STEPS) { const stepCfg = currentStep(); ... pi.sendMessage(msg, {triggerTurn: true, deliverAs: "steer"}); } })`. Also remove the duplicate steer from `before_agent_start` (already removed in prior fix).
 
-- [ ] **Remove steer from session_start handler entirely**: The session_start handler should only call `restoreStep(ctx)`, `updateStatus(ctx)`, and `ctx.ui.notify(...)`. No `sendMessage` or `sendUserMessage`.
+- [ ] Remove steer from session_start handler entirely: The session_start handler should only call `restoreStep(ctx)`, `updateStatus(ctx)`, and `ctx.ui.notify(...)`. No `sendMessage` or `sendUserMessage`.
   - Evidence: Session log shows orient-start steer at 08:33:02.667 aborts at 08:33:03.818 (1.15s later), then pi-session-search-primer at 08:33:04.008. The abort occurs before primer finishes. (Source: Session 019ea65d JSONL timestamps)
   - Confidence: 0.90
   - Details: Remove the entire `if (step <= TOTAL_STEPS) { ... pi.sendMessage(...) }` block from session_start handler.
 
-- [ ] **Add resources_discover handler with steer**: The handler should be async (matching Pi's async handler signature). Send the same orient-start steer message with `triggerTurn: true` and `deliverAs: "steer"`. Add `console.error("[orient] resources_discover: sending steer")` for debugging.
+- [ ] Add resources_discover handler with steer: The handler should be async (matching Pi's async handler signature). Send the same orient-start steer message with `triggerTurn: true` and `deliverAs: "steer"`. Add `console.error("[orient] resources_discover: sending steer")` for debugging.
   - Evidence: Pi docs: "Fired after session_start so extensions can contribute additional skill, prompt, and theme paths." This guarantees all session_start custom messages are in the session before our steer triggers a turn. (Source: Pi extensions.md line 339-346)
   - Confidence: 0.90
   - Details: `pi.on("resources_discover", async (event, ctx) => { ... })`. The `event` has `cwd` and `reason` fields. This handler already exists in cx-cache-warm (it uses session_start, not resources_discover — but the pattern of deferring work is the same).
 
 ### Phase 2: Verify and commit
 
-- [ ] **Test in pi-agent-config project**: Start a new session in the pi-agent-config project. Verify: (1) status line shows ⚠️ Orient [1/2] immediately, (2) the orient steer triggers agent processing after other extensions have settled, (3) no [aborted] turns in the session log.
+- [ ] Test in pi-agent-config project: Start a new session in the pi-agent-config project. Verify: (1) status line shows ⚠️ Orient [1/2] immediately, (2) the orient steer triggers agent processing after other extensions have settled, (3) no [aborted] turns in the session log.
   - Evidence: The pi-agent-config project is where the bug reproduces (3 extensions + orient all inject at session_start). (Source: User report — "this project only")
   - Confidence: 0.85
   - Details: Check session JSONL for `[aborted]` turns. Check that orient-start custom message timestamp is AFTER pi-session-search-primer timestamp.
 
-- [ ] **Test in automatify-jira-testops project**: Verify orient still works in the project where it previously succeeded. Confirm no regression.
+- [ ] Test in automatify-jira-testops project: Verify orient still works in the project where it previously succeeded. Confirm no regression.
   - Evidence: Previously successful in this project. (Source: Session 019ea62f)
   - Confidence: 0.95
   - Details: Run full orient flow: cx overview → ck --status → skill tour → acknowledge.
@@ -135,38 +135,38 @@ type: plan
 max_chars: 20000
 banned_words: [None., N/A, Nothing to reuse, No reuse]
 match:
-  has_reuse_item: '^- \*\*[^*]+\*\*:'
+  has_reuse_item: '^- .+:'
 ```
 
-- **Existing session_start handler logic**: `restoreStep()`, `updateStatus()`, and `ctx.ui.notify()` stay in session_start — only the steer sending moves to resources_discover.
-- **Pi's resources_discover event**: Already defined in the ExtensionAPI type system, no new API discovery needed. cx-cache-warm uses `pi.on("session_start", ...)` and `resources_discover` is documented as the next event in the startup lifecycle.
+- Existing session_start handler logic: `restoreStep()`, `updateStatus()`, and `ctx.ui.notify()` stay in session_start — only the steer sending moves to resources_discover.
+- Pi's resources_discover event: Already defined in the ExtensionAPI type system, no new API discovery needed. cx-cache-warm uses `pi.on("session_start", ...)` and `resources_discover` is documented as the next event in the startup lifecycle.
 
 ## Evidence Pack
 
-- **Claim**: orient's `triggerTurn` steer at session_start is aborted because pi-session-search-primer, extmgr-auto-update, and plannotator inject custom messages within ~1.3 seconds of session_start, causing the agent to abort the in-flight turn.
+- Claim: orient's `triggerTurn` steer at session_start is aborted because pi-session-search-primer, extmgr-auto-update, and plannotator inject custom messages within ~1.3 seconds of session_start, causing the agent to abort the in-flight turn.
   Source: Session 019ea65d JSONL — orient-start at 08:33:02.667, assistant [aborted] at 08:33:03.818, pi-session-search-primer at 08:33:04.008
-  **Confidence**: 0.95
-  **Implication**: Moving the steer to after all session_start injections eliminates the race condition.
+  Confidence: 0.95
+  Implication: Moving the steer to after all session_start injections eliminates the race condition.
 
-- **Claim**: Pi's lifecycle is: `session_start` → `resources_discover` → user prompt/extension trigger. All session_start handlers complete before resources_discover fires.
+- Claim: Pi's lifecycle is: `session_start` → `resources_discover` → user prompt/extension trigger. All session_start handlers complete before resources_discover fires.
   Source: Pi extensions.md lines 273-275 and 339-346; agent-session.js line 643-649 (session_start event emitted, then extendResourcesFromExtensions called)
-  **Confidence**: 0.90
-  **Implication**: `resources_discover` is the correct event to send a steer that must not conflict with other session_start injections.
+  Confidence: 0.90
+  Implication: `resources_discover` is the correct event to send a steer that must not conflict with other session_start injections.
 
-- **Claim**: `sendCustomMessage` with `triggerTurn: true` when agent is idle calls `_runAgentPrompt(message)`, starting a new agent turn. If another message injection happens during that turn, the turn can be aborted.
+- Claim: `sendCustomMessage` with `triggerTurn: true` when agent is idle calls `_runAgentPrompt(message)`, starting a new agent turn. If another message injection happens during that turn, the turn can be aborted.
   Source: agent-session.js lines 971-999 (sendCustomMessage implementation)
-  **Confidence**: 0.85
-  **Implication**: Sending the triggerTurn at session_start (before other injections settle) causes the abort. Sending it at resources_discover (after injections settle) avoids this.
+  Confidence: 0.85
+  Implication: Sending the triggerTurn at session_start (before other injections settle) causes the abort. Sending it at resources_discover (after injections settle) avoids this.
 
-- **Claim**: Only orient and hex-edit-steer (when blocked) use `triggerTurn: true` at session_start. pi-session-search-primer uses plain `sendMessage()` without triggerTurn.
+- Claim: Only orient and hex-edit-steer (when blocked) use `triggerTurn: true` at session_start. pi-session-search-primer uses plain `sendMessage()` without triggerTurn.
   Source: Grep of all local and installed extensions for `triggerTurn` usage
-  **Confidence**: 0.95
-  **Implication**: orient is the only extension that can cause this race condition on a fresh session (hex-edit-steer only fires when edit is blocked).
+  Confidence: 0.95
+  Implication: orient is the only extension that can cause this race condition on a fresh session (hex-edit-steer only fires when edit is blocked).
 
-- **Claim**: The bug is project-specific because different projects have different extension sets and different AGENTS.md content sizes, which affect how long session_start processing takes.
+- Claim: The bug is project-specific because different projects have different extension sets and different AGENTS.md content sizes, which affect how long session_start processing takes.
   Source: User report — "This does not occur in /Users/maksim/repos/automatify-jira-testops project"
-  **Confidence**: 0.80
-  **Implication**: The race is timing-dependent; projects with fewer/heavier session_start extensions are more likely to hit it.
+  Confidence: 0.80
+  Implication: The race is timing-dependent; projects with fewer/heavier session_start extensions are more likely to hit it.
 
 ### Gaps
 
@@ -197,7 +197,7 @@ grep -n "sendMessage\|sendUserMessage\|triggerTurn" extensions/orient.ts
 
 ## Bottom Line
 
-- **Per-step confidence**: 0.88 (average)
-- **Key risk**: `resources_discover` may fire before all async session_start handlers have completed their custom message injections. If Pi does not await async handlers before emitting resources_discover, the race could persist. Mitigation: test with verbose logging to confirm message ordering in the session JSONL.
-- **Gaps**: Cannot verify Pi's internal async handler completion guarantee for resources_discover timing. Cannot predict future Pi lifecycle changes.
-- **Recommendation**: proceed — `resources_discover` is documented as firing after `session_start` in the Pi extension lifecycle. It is the idiomatic event for "session is fully initialized." The risk of timing issues is low compared to the current guaranteed race condition at `session_start`.
+- Per-step confidence: 0.88 (average)
+- Key risk: `resources_discover` may fire before all async session_start handlers have completed their custom message injections. If Pi does not await async handlers before emitting resources_discover, the race could persist. Mitigation: test with verbose logging to confirm message ordering in the session JSONL.
+- Gaps: Cannot verify Pi's internal async handler completion guarantee for resources_discover timing. Cannot predict future Pi lifecycle changes.
+- Recommendation: proceed — `resources_discover` is documented as firing after `session_start` in the Pi extension lifecycle. It is the idiomatic event for "session is fully initialized." The risk of timing issues is low compared to the current guaranteed race condition at `session_start`.
