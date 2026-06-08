@@ -54,11 +54,21 @@ match:
 - tool_name: Yes / No (why not needed) / Possibly (when you'd use it)
 (Minimum 3 entries. No N/A. No file references — files go in Files to Modify. No dismissive No — justify by task scope.)
 
-Valid entries (Pi skills/extensions/MCP servers only):
-- cx: Yes — needed to trace call graph across codebase
-- docfence: Possibly — may want to scaffold a feature spec later
+### How to enumerate valid entries
+
+Before writing Tools & Skills, run these three commands to discover available capabilities:
+- **Skills**: `ls -1 ~/.pi/agent/skills/ .pi/skills/ 2>/dev/null`
+- **MCP**: `mcporter list`
+- **CLI**: `~/.pi/agent/skills/cli-tool-discovery/tool/ai-tooling`
+
+Every entry must have a category label in parentheses: Skills, MCP, or CLI.
+
+Valid entries (three categories — Skills, MCP, CLI):
+- cx (Skills): Yes — needed to trace call graph across codebase
+- docfence (Skills): Possibly — may want to scaffold a feature spec later
 - github (MCP): Yes — will create PRs as part of execution
-- grep: No — task requires semantic search, not text matching
+- jq (CLI): Yes — needed to parse JSON config files
+- grep (CLI): No — task requires semantic search, not text matching
 
 Invalid entries:
 - validator.py: No — file reference, not a tool → belongs in Files to Modify

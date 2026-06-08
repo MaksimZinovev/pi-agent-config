@@ -1,0 +1,19 @@
+#!/usr/bin/env zsh
+# ai-tooling — list CLI tools most relevant for AI coding agents (Pi-focused)
+# Hybrid: brew list (primary) + command -v orphan detection (fallback for non-brew installs)
+# Specs: docs/specs/ai-tooling.md + docs/specs/ai-tooling-orphane.md
+
+setopt local_options pipe_fail 2>/dev/null || true
+
+# AI-tooling whitelist (case-insensitive, anchored)
+# Source: docs/specs/ai-tooling.md
+local whitelist='^(node|npm|pnpm|yarn|bun|corepack|python[0-9.]*|pip|pipx|uv|uvx|poetry|conda|mamba|micromamba|ruff|black|flake8|mypy|isort|pyright|basedpyright|git|gh|glab|hub|docker|podman|nerdctl|colima|curl|wget|httpie|xh|jq|yq|gron|dasel|fx|jql|fzf|rg|ripgrep|fd|bat|eza|lsd|zoxide|autojump|htop|btop|glances|bottom|tldr|cheat|navi|make|cmake|just|task|zig|go|rustc|cargo|swift|ffmpeg|magick|imagemagick|exiftool|sqlite3?|mysql|psql|redis-cli|mongosh|litecli|aws|gcloud|az|doctl|fly|vercel|wrangler|netlify|supabase|terraform|tofu|pulumi|ansible|vagrant|packer|kubectl|helm|k9s|kustomize|kubectx|stern|nix|direnv|mise|rtx|asdf|virtualenv|venv|llm|ollama|openai|claude|gemini|aider|cody|cline|continue|msty|jan|pi|pi-cli|tmux|zellij|wezterm|alacritty|kitty|lazygit|tig|delta|diff-so-fancy|neovim|vim|helix|emacs|micro|nano|stow|chezmoi|mackup|restic|borg|rsync|rclone|shellcheck|shfmt|actionlint|hadolint|tflint|markdownlint|yamllint|vale|alex|mcporter|cx|ck|inspect|slop-scan|xxd|hexdump)$'
+
+# 1. All executables in $PATH (deduped, basename only)
+all_cmds=$(printf '%s\n' "${(@s/:/)PATH}" | while read -r d; do ls -1 "$d" 2>/dev/null; done | sort -u)
+
+# 2. Intersect with whitelist
+matched=$(echo "$all_cmds" | grep -iE "$whitelist" 2>/dev/null)
+
+# 3. Print sorted results (dedup python version noise: keep python3, not python3.10 python3.11 etc.)
+echo "$matched" | sort -u | grep -v '^$' | grep -vE '^python[0-9]+\.[0-9]+$'

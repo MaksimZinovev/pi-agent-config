@@ -137,6 +137,13 @@ docfence new plan --output plans/<name>.md --id <ID> --title "<title>" --owner <
 
 This produces a file with all required sections, spec blocks, and `[REPLACE]` placeholders. Then fill each section with researched content — replacing every `[REPLACE]` and `df-todo` block. Do not write plans from scratch; always scaffold first.
 
+Before filling `## Tools & Skills`, enumerate available capabilities from three sources:
+1. **Skills**: `ls -1 ~/.pi/agent/skills/ .pi/skills/ 2>/dev/null`
+2. **MCP**: `mcporter list`
+3. **CLI**: `~/.pi/agent/skills/cli-tool-discovery/tool/ai-tooling`
+
+Every entry must have a category label: Skills, MCP, or CLI — e.g., `cx (Skills): Yes`, `github (MCP): Yes`, `jq (CLI): Yes`.
+
 The plan must contain all 10 sections (including `## Tools & Skills` and `## Out of Scope`) and use `- [ ]` checklists for steps, not bold headers. Minimal structure:
 
 ```
@@ -184,7 +191,7 @@ These are non-negotiable. Violating any of these makes the output unreliable.
 - Do not skip `docfence validate` — every plan must pass validation before delivery
 - Do not write plans from scratch — always scaffold with `docfence new plan` first, then fill in
 - Do not leave `## Out of Scope` vague — each excluded item needs a one-line justification (`- X: because [reason]`)
-- Do not skip the Y/N/P audit — `## Tools & Skills` must list relevant tools/skills with `Yes` (must use), `No` (not needed, with justification), or `Possibly` (might use) labels. Enumerate from tree -L 1 -d ~/.pi/agent/skills/ .pi/skills/ (skills), tree -L 1 -d ~/.pi/agent/extensions/ .pi/extensions/ (extensions), pi list (MCP) — no file references (files go in Files to Modify), no dismissive "No" (justify by task scope)
+- Do not skip the Y/N/P audit — `## Tools & Skills` must list relevant tools/skills with `Yes` (must use), `No` (not needed, with justification), or `Possibly` (might use) labels. Before writing the audit, enumerate from three sources: Skills via `ls -1 ~/.pi/agent/skills/ .pi/skills/ 2>/dev/null`, MCP via `mcporter list`, CLI via `~/.pi/agent/skills/cli-tool-discovery/tool/ai-tooling`. Three categories: Skills, MCP, CLI. No file references (files go in Files to Modify), no dismissive "No" (justify by task scope)
 
 ## Stop Conditions
 

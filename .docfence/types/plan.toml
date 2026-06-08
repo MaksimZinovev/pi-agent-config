@@ -48,7 +48,7 @@ banned_words = [
 has_problem = '(problem|issue|bug|break|fail|cannot|does.not|unable)'
 
 [template_vars.sections."Tools & Skills"]
-fill = "[REPLACE] Audit from tree -L 1 -d ~/.pi/agent/skills/ .pi/skills/ (skills), tree -L 1 -d ~/.pi/agent/extensions/ .pi/extensions/ (extensions), pi list (MCP). Format: name: Yes (must use) / No (not needed by task scope) / Possibly (when you'd use it). Minimum 3 entries. No N/A. No file references. No dismissive No."
+fill = "[REPLACE] Enumerate from three sources then audit each tool. Skills: ls -1 ~/.pi/agent/skills/ .pi/skills/ 2>/dev/null. MCP: mcporter list. CLI: ~/.pi/agent/skills/cli-tool-discovery/tool/ai-tooling. Three categories: Skills, MCP, CLI. Format: name (category): Yes (must use) / No (not needed by task scope) / Possibly (when you'd use it). Minimum 3 entries. No N/A. No file references. No dismissive No."
 banned_words = ["N/A", "n/a", "grep sufficient", "small codebase", "simple enough", "overkill for"]
 
 [template_vars.sections."Tools & Skills".match]
