@@ -149,7 +149,7 @@ The plan **must** contain all 10 sections (including `## Tools & Skills` and `##
 ## Files to Modify — explicit list (CREATED/UPDATED/DELETED)
 ## Reuse — existing code or patterns to leverage
 ## Evidence Pack — claims with Source, Confidence, Implication
-## Verification — `### Test N` blocks with commands + expected results
+## Verification — bash blocks with `# Test N:` labels and `# Expected:` results
 ## Bottom Line — confidence, key risk, gaps, recommendation
 ```
 

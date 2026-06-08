@@ -14,7 +14,7 @@ Every plan **must** contain these sections. Omitting any is an error. Scaffold w
 | `## Files to Modify` | Explicit list: create, update, or delete |
 | `## Reuse` | Existing code, libraries, or patterns to leverage. Include partial reusable extraction suggestions |
 | `## Evidence Pack` | Claims with Source, Confidence, Implication |
-| `## Verification` | `### Test N` blocks with commands and expected results |
+| `## Verification` | Bash code blocks with `# Test N:` labels and `# Expected:` results |
 | `## Bottom Line` | Per-step confidence, key risk, gaps, recommendation |
 
 ## Full Format Template
@@ -41,7 +41,7 @@ match:
   has_checklist: '^- \[( |x)\]'
   has_source: 'Source:'
   has_file_marker: "(CREATED|UPDATED|DELETED)"
-  has_test: "^### Test"
+  has_test: '# Test \d'
   has_out_of_scope: "^## Out of Scope"
   has_tools_and_skills: "^## Tools & Skills"
   has_ynp_format: '^- \*\*[^*]+\*\*: (Yes|No|Possibly)\b'
@@ -110,11 +110,13 @@ match:
 
 ## Verification
 
-### Test 1: [description]
 ```bash
-command --to-run
+command --to-run  # Test 1: [description]
+# Expected: [what success looks like]
+
+pnpm test  # Test 2: [description]
+# Expected: [what success looks like]
 ```
-Expected: [what success looks like]
 
 ## Bottom Line
 - **Per-step confidence**: [average confidence]
@@ -134,7 +136,7 @@ The document-level spec block also enforces structural `match` rules:
 - `has_checklist` — at least one `- [ ]` or `- [x]` step exists
 - `has_source` — at least one `**Source**` evidence citation exists
 - `has_file_marker` — at least one CREATED/UPDATED/DELETED marker in Files to Modify
-- `has_test` — at least one `### Test` block in Verification
+- `has_test` — at least one `# Test N:` label in Verification
 - `has_out_of_scope` — `## Out of Scope` section exists
 - `has_tools_and_skills` — `## Tools & Skills` section exists
 - `has_ynp_format` — at least one Y/N/P audit entry (`- **name**: Yes/No/Possibly`)
@@ -155,7 +157,7 @@ Each section also has its own validation rules that catch common planner failure
 | Files to Modify | `match`: must have `\`path\`: CREATED/UPDATED/DELETED` entries | Files mentioned in prose instead of explicit list |
 | Reuse | `banned_words`: None./N/A cop-outs; `match`: must have bold-labeled reuse items | "Nothing to reuse" laziness when patterns/libraries exist |
 | Evidence Pack | `banned_words`: **Source**:/**Source:** formats; `match`: must have `**Claim**:` entries and `**Confidence**:` scores | Bold-formatted Source that bypasses match rule; claims without confidence |
-| Verification | `match`: must have `\`\`\`bash` command blocks, `Expected:` results, ≥2 `### Test` blocks | Prose "run the tests" instead of actual commands; single-test "verification" |
+| Verification | `match`: must have `` ```bash `` blocks, `# Expected:` results, ≥2 `# Test N:` labels | Prose "run the tests" instead of actual commands; single-test "verification" |
 | Bottom Line | `match`: must have `**Recommendation**:` label | Vague "should work" without explicit proceed/hold/redirect decision |
 
 ## Workflow

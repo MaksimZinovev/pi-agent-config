@@ -23,7 +23,7 @@ placeholders = ["```df-todo", "[REPLACE]"]
 has_checklist = '^- \[( |x)\]'
 has_source = 'Source:'
 has_file_marker = "(CREATED|UPDATED|DELETED)"
-has_test = "^### Test"
+has_test = '# Test \d'
 has_out_of_scope = "^## Out of Scope"
 has_tools_and_skills = '^## Tools & Skills'
 has_ynp_format = '^- \*\*[^*]+\*\*: (Yes|No|Possibly)\b'
@@ -35,7 +35,14 @@ owner = "human"
 
 [template_vars.sections.Context]
 fill = "[REPLACE] What problem does this solve? State the issue concisely — no narrative backstory."
-banned_words = ["might be", "could be", "seems like", "I think", "possibly", "perhaps"]
+banned_words = [
+  "might be",
+  "could be",
+  "seems like",
+  "I think",
+  "possibly",
+  "perhaps",
+]
 
 [template_vars.sections.Context.match]
 has_problem = '(problem|issue|bug|break|fail|cannot|does.not|unable)'
@@ -93,12 +100,12 @@ has_evidence_claim = '^- \*\*Claim\*:'
 has_confidence = '\*\*Confidence\*\*:'
 
 [template_vars.sections.Verification]
-fill = "[REPLACE] ### Test N blocks with ```bash commands and Expected: results. Include end-user testing where possible. Minimum 2 test blocks."
+fill = "[REPLACE] Bash code blocks with # Test N: labels and # Expected: results. Prefer inline # comments where possible. Minimum 2 tests."
 
 [template_vars.sections.Verification.match]
 has_verify_command = '^```bash'
-has_expected = 'Expected:'
-min_2_tests = '^### Test'
+has_expected = '# Expected:'
+min_2_tests = '# Test \d'
 
 [template_vars.sections."Bottom Line"]
 fill = "[REPLACE] Per-step confidence, key risk, gaps, and **Recommendation**: proceed/hold/redirect."
