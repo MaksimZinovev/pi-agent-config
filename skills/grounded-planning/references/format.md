@@ -97,19 +97,15 @@ match:
 
 ## Steps
 
-### Phase 1: [Phase Name]
-- [ ] **Step 1**: [Action]
-  - Evidence: [cite claim from Evidence Pack, or "known pattern"]
+- [ ] [Action] (Source: file.ts:42 or Evidence Pack Claim 2 or "known pattern")
   - Confidence: [0.0–1.0]
   - Details: [specific enough to execute immediately]
-- [ ] **Step 2**: [Action]
-  - Evidence: [...]
+- [ ] [Action] (Source: ...)
   - Confidence: [...]
   - Details: [...]
-
-### Phase 2: [Phase Name]
-- [ ] **Step 3**: [Action]
-  ...
+- [ ] [Action] (Source: ...)
+  - Confidence: [...]
+  - Details: [...]
 
 ## Files to Modify
 - `path/to/file.ts` — CREATED: what this file contains and why it's new
@@ -127,8 +123,14 @@ match:
   Confidence: [0.0–1.0]
   Implication: [what this means for the plan]
 
+- Claim: [next piece of evidence]
+  Source: [...]
+  Confidence: [...]
+  Implication: [...]
+
 ### Gaps
-- [What we couldn't verify]
+- [What we couldn't verify and why]
+- [What would require running code or checking logs]
 
 ## Verification
 
@@ -141,7 +143,7 @@ pnpm test  # Test 2: [description]
 ```
 
 ## Bottom Line
-- Per-step confidence: [average confidence]
+- Per-step confidence: [list each step's confidence, then average; note outliers]
 - Key risk: [biggest risk and mitigation]
 - Gaps: [1–2 things we couldn't verify]
 - Recommendation: [proceed / proceed with caution / need more info]
@@ -175,7 +177,7 @@ Each section also has its own validation rules that catch common planner failure
 | Tools & Skills | `banned_words`: N/A, n/a, dismissive phrases; `match`: ≥3 Y/N/P entries required | Lazy cop-outs like "N/A"; skipping tool consideration; dismissive "No" |
 | Approach | `banned_words`: Q1:/Q2:/**Q/Question: formats; `max_chars`: 800; `match`: must mention alternatives (alternative/instead of/rather than/compared to) | Q&A decision format; 40-line design docs; no comparison with alternatives |
 | Out of Scope | `banned_words`: None./N/A/Not applicable cop-outs; `match`: must have ≥2 item justifications | Lazy "None." dismissal; no genuine scope boundaries |
-| Steps | `banned_words`: Step/Task/Phase bold headers; `match`: evidence citations per step `(Source...)`, ≥3 checklist items | Prose paragraphs; bold headers; 1-step "plans"; no evidence trail |
+| Steps | `banned_words`: Step/Task/Phase bold headers; `match`: evidence citations per step `(Source: file:line or Claim N)`, ≥3 checklist items | Prose paragraphs; bold headers; 1-step "plans"; no evidence trail |
 | Files to Modify | `match`: must have `\`path\`: CREATED/UPDATED/DELETED` entries | Files mentioned in prose instead of explicit list |
 | Reuse | `banned_words`: None./N/A cop-outs; `match`: must have labeled reuse items | "Nothing to reuse" laziness when patterns/libraries exist |
 | Evidence Pack | `banned_words`: Source:/Source: formats; `match`: must have `Claim:` entries and `Confidence:` scores | Bold-formatted Source that bypasses match rule; claims without confidence |

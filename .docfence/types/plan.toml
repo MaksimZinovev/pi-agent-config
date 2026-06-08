@@ -48,7 +48,7 @@ banned_words = [
 has_problem = '(problem|issue|bug|break|fail|cannot|does.not|unable)'
 
 [template_vars.sections."Tools & Skills"]
-fill = "[REPLACE] Enumerate from three sources then audit each tool. Skills: ls -1 ~/.pi/agent/skills/ .pi/skills/ 2>/dev/null. MCP: mcporter list. CLI: ~/.pi/agent/skills/cli-tool-discovery/tool/ai-tooling. Three categories: Skills, MCP, CLI. Format: name (category): Yes (must use) / No (not needed by task scope) / Possibly (when you'd use it). Minimum 3 entries. No N/A. No file references. No dismissive No."
+fill = "[REPLACE] Enumerate from three sources first: Skills (ls -1 ~/.pi/agent/skills/ .pi/skills/ 2>/dev/null), MCP (mcporter list), CLI (~/.pi/agent/skills/cli-tool-discovery/tool/ai-tooling). Then audit each discovered tool. Three categories: Skills, MCP, CLI. Format: name (category): Yes (must use) / No (not needed by task scope) / Possibly (when you'd use it). Minimum 3 entries. No N/A. No file references. No dismissive No."
 banned_words = ["N/A", "n/a", "grep sufficient", "small codebase", "simple enough", "overkill for"]
 
 [template_vars.sections."Tools & Skills".match]
@@ -71,7 +71,7 @@ has_justification = '^- .+:'
 min_2_exclusions = '^- .+:'
 
 [template_vars.sections.Steps]
-fill = "[REPLACE] Phased - [ ] checklist items with (Source: ...) citations per step. Minimum 3 steps. No Step/Task/Phase bold headers."
+fill = "[REPLACE] - [ ] checklist items with (Source: ...) citations per step. Source can reference a file path, an Evidence Pack claim, or a doc section. Minimum 3 steps. No Step/Task/Phase bold headers."
 banned_words = ["**Step", "**Task", "**Phase"]
 
 [template_vars.sections.Steps.match]
@@ -92,7 +92,7 @@ banned_words = ["None.", "N/A", "Nothing to reuse", "No reuse"]
 has_reuse_item = '^- .+:'
 
 [template_vars.sections."Evidence Pack"]
-fill = "[REPLACE] Claims with Source, Confidence, Implication — cite every claim. Use bare Source: not bold. Minimum 2 claims with Confidence scores."
+fill = "[REPLACE] Claims with Source, Confidence, Implication — cite every claim. Use bare Source: not bold. Minimum 2 claims with Confidence scores. Example: - Claim: X is true\n  Source: file.ts:42\n  Confidence: 0.9\n  Implication: therefore Y. Add a ### Gaps subsection for unverifiable claims."
 banned_words = ["**Source**:", "**Source:**"]
 
 [template_vars.sections."Evidence Pack".match]
@@ -100,7 +100,7 @@ has_evidence_claim = '^- Claim:'
 has_confidence = 'Confidence:'
 
 [template_vars.sections.Verification]
-fill = "[REPLACE] Bash code blocks with # Test N: labels and # Expected: results. Prefer inline # comments where possible. Include end-user testing. Minimum 2 tests."
+fill = "[REPLACE] Bash code blocks with # Test N: labels and # Expected: results. Put # Expected: on its own line after the command. Prefer inline # comments where possible. Include end-user testing. Minimum 2 tests."
 
 [template_vars.sections.Verification.match]
 has_verify_command = '^```bash'
@@ -108,7 +108,7 @@ has_expected = '# Expected:'
 min_2_tests = '# Test \d'
 
 [template_vars.sections."Bottom Line"]
-fill = "[REPLACE] Per-step confidence, key risk, gaps, and Recommendation: proceed/hold/redirect."
+fill = "[REPLACE] Per-step confidence (list each, then average; note outliers), key risk, gaps, and Recommendation: proceed/hold/redirect."
 
 [template_vars.sections."Bottom Line".match]
 has_recommendation = 'Recommendation:'

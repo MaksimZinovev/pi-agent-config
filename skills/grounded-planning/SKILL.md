@@ -152,7 +152,7 @@ The plan must contain all 10 sections (including `## Tools & Skills` and `## Out
 ## Tools & Skills — Y/N/P audit of relevant tools and skills
 ## Approach — recommended direction and why
 ## Out of Scope — bullet list of excluded items with one-line justification each
-## Steps — phased `- [ ]` checklists with evidence citations
+## Steps — `- [ ]` checklists with evidence citations
 ## Files to Modify — explicit list (CREATED/UPDATED/DELETED)
 ## Reuse — existing code or patterns to leverage
 ## Evidence Pack — claims with Source, Confidence, Implication
