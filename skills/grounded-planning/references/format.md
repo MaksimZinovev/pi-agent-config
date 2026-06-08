@@ -48,16 +48,30 @@ match:
 ```
 
 ## Context
-[Why this change is needed — what problem does it solve?]
+[What problem does this solve? State the issue concisely — no narrative backstory. Must name the problem (bug, issue, fail, break, etc.). No hedging (might be, could be, seems like, I think).]
 
 ## Tools & Skills
 - **tool_name**: Yes / No (why not needed) / Possibly (when you'd use it)
+(Minimum 3 entries. No N/A.)
 
 ## Approach
-[Recommended approach and rationale — why this direction over alternatives?]
+[Recommended direction and rationale — why this over alternatives? Max ~10 lines. Must mention an alternative. No Q1:/Q2: format.]
+```spec
+type: plan
+max_chars: 800
+banned_words: [Q1:, Q2:, Q3:, **Q, Question:]
+match:
+  has_alternative: '(alternative|instead of|rather than|compared to|over:|vs[.])'
+```
 
 ## Out of Scope
-- **[Item]**: [one-line justification for exclusion]
+- **item**: reason for exclusion. Minimum 2 items. No None./N/A.
+```spec
+type: plan
+banned_words: [Nothing., None., N/A, n/a, Not applicable]
+match:
+  has_justification: '^- \*\*[^*]+\*\*:'
+```
 
 ## Steps
 
@@ -76,16 +90,18 @@ match:
   ...
 
 ## Files to Modify
-- `path/to/file.ts` — CREATED
-- `path/to/config.ts` — UPDATED
+- `path/to/file.ts` — CREATED: what this file contains and why it's new
+- `path/to/config.ts` — UPDATED: what changes and why
+(Must use `path — CREATED/UPDATED/DELETED` format. No prose.)
 
 ## Reuse
-- [Existing code, libraries, or patterns to leverage]
+- **existing_pattern**: how it's reused (no None./N/A cop-outs — always identify something)
+- **library_name**: what it provides
 
 ## Evidence Pack
 
 - **Claim**: [what we learned]
-  **Source**: [path, URL, or Context7 section]
+  Source: [path, URL, or Context7 section — use bare Source:, not **Source**:]
   **Confidence**: [0.0–1.0]
   **Implication**: [what this means for the plan]
 
@@ -124,6 +140,23 @@ The document-level spec block also enforces structural `match` rules:
 - `has_ynp_format` — at least one Y/N/P audit entry (`- **name**: Yes/No/Possibly`)
 
 Run `docfence validate plans/<name>.md` after writing. Fix errors until clean. Do not declare the plan done until validation passes.
+
+### Section-level rules
+
+Each section also has its own validation rules that catch common planner failures:
+
+| Section | Rules | What it catches |
+|---------|-------|-----------------|
+| Context | `banned_words`: hedging phrases (might be, could be, seems like, I think, possibly, perhaps); `match`: must name the problem (problem/issue/bug/break/fail/cannot) | Verbose narrative instead of concise problem statement; "I think maybe we should..." hedging |
+| Tools & Skills | `banned_words`: N/A, n/a; `match`: ≥3 Y/N/P entries required | Lazy cop-outs like "N/A"; skipping tool consideration |
+| Approach | `banned_words`: Q1:/Q2:/**Q/Question: formats; `max_chars`: 800; `match`: must mention alternatives (alternative/instead of/rather than/compared to) | Q&A decision format; 40-line design docs; no comparison with alternatives |
+| Out of Scope | `banned_words`: None./N/A/Not applicable cop-outs; `match`: must have ≥2 bold-item justifications | Lazy "None." dismissal; no genuine scope boundaries |
+| Steps | `banned_words`: **Step/**Task/**Phase bold headers; `match`: evidence citations per step `(Source...)`, ≥3 checklist items | Prose paragraphs; `**Task 1:**` format; 1-step "plans"; no evidence trail |
+| Files to Modify | `match`: must have `\`path\`: CREATED/UPDATED/DELETED` entries | Files mentioned in prose instead of explicit list |
+| Reuse | `banned_words`: None./N/A cop-outs; `match`: must have bold-labeled reuse items | "Nothing to reuse" laziness when patterns/libraries exist |
+| Evidence Pack | `banned_words`: **Source**:/**Source:** formats; `match`: must have `**Claim**:` entries and `**Confidence**:` scores | Bold-formatted Source that bypasses match rule; claims without confidence |
+| Verification | `match`: must have `\`\`\`bash` command blocks, `Expected:` results, ≥2 `### Test` blocks | Prose "run the tests" instead of actual commands; single-test "verification" |
+| Bottom Line | `match`: must have `**Recommendation**:` label | Vague "should work" without explicit proceed/hold/redirect decision |
 
 ## Workflow
 
