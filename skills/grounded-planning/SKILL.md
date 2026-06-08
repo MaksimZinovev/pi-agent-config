@@ -184,7 +184,7 @@ These are non-negotiable. Violating any of these makes the output unreliable.
 - Do not skip `docfence validate` — every plan must pass validation before delivery
 - Do not write plans from scratch — always scaffold with `docfence new plan` first, then fill in
 - Do not leave `## Out of Scope` vague — each excluded item needs a one-line justification (`- X: because [reason]`)
-- Do not skip the Y/N/P audit — `## Tools & Skills` must list relevant tools/skills with `Yes` (must use), `No` (not needed, with justification), or `Possibly` (might use) labels. Enumerate from skills dirs (`tree -L 1 -d ~/.pi/agent/skills/ .pi/skills/`), extensions (`cat ~/.pi/agent/settings.json`), and MCP servers (`mcpServers` key) — no file references (files go in Files to Modify), no dismissive "No" (justify by task scope)
+- Do not skip the Y/N/P audit — `## Tools & Skills` must list relevant tools/skills with `Yes` (must use), `No` (not needed, with justification), or `Possibly` (might use) labels. Enumerate from tree -L 1 -d ~/.pi/agent/skills/ .pi/skills/ (skills), tree -L 1 -d ~/.pi/agent/extensions/ .pi/extensions/ (extensions), pi list (MCP) — no file references (files go in Files to Modify), no dismissive "No" (justify by task scope)
 
 ## Stop Conditions
 
