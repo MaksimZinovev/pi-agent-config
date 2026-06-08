@@ -54,9 +54,10 @@ match:
 - tool_name: Yes / No (why not needed) / Possibly (when you'd use it)
 (Minimum 3 entries. No N/A. No file references — files go in Files to Modify. No dismissive No — justify by task scope.)
 
-Valid entries (Pi skills/tools only):
+Valid entries (Pi skills/extensions/MCP servers only):
 - cx: Yes — needed to trace call graph across codebase
 - docfence: Possibly — may want to scaffold a feature spec later
+- github (MCP): Yes — will create PRs as part of execution
 - grep: No — task requires semantic search, not text matching
 
 Invalid entries:
