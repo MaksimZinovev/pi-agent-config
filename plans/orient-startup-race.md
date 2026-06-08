@@ -23,7 +23,7 @@ match:
   has_test: '# Test \d'
   has_out_of_scope: '^## Out of Scope'
   has_tools_and_skills: '^## Tools & Skills'
-  has_ynp_format: '^- \*\*[^*]+\*\*: (Yes|No|Possibly)\b'
+  has_ynp_format: '^- .+: (Yes|No|Possibly)\b'
 ```
 
 ## Context
