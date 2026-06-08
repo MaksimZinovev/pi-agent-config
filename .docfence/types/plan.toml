@@ -49,7 +49,7 @@ has_problem = '(problem|issue|bug|break|fail|cannot|does.not|unable)'
 
 [template_vars.sections."Tools & Skills"]
 fill = "[REPLACE] List Pi skills from pi --skills and tools from pi --tools: skill-name: Yes / No (reason) / Possibly (when). Minimum 3 entries. No N/A. No file references. No dismissive 'No' — justify by task scope."
-banned_words = ["N/A", "n/a"]
+banned_words = ["N/A", "n/a", "grep sufficient", "small codebase", "simple enough", "overkill for"]
 
 [template_vars.sections."Tools & Skills".match]
 min_3_ynp = '^- .+: (Yes|No|Possibly)\b'

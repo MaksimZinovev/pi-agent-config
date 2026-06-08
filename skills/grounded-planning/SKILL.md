@@ -184,7 +184,7 @@ These are non-negotiable. Violating any of these makes the output unreliable.
 - Do not skip `docfence validate` — every plan must pass validation before delivery
 - Do not write plans from scratch — always scaffold with `docfence new plan` first, then fill in
 - Do not leave `## Out of Scope` vague — each excluded item needs a one-line justification (`- X: because [reason]`)
-- Do not skip the Y/N/P audit — `## Tools & Skills` must list relevant tools/skills with `Yes` (must use), `No` (not needed, with justification), or `Possibly` (might use) labels
+- Do not skip the Y/N/P audit — `## Tools & Skills` must list relevant tools/skills with `Yes` (must use), `No` (not needed, with justification), or `Possibly` (might use) labels. Enumerate from `pi --skills` and `pi --tools` — no file references (files go in Files to Modify), no dismissive "No" (justify by task scope)
 
 ## Stop Conditions
 
