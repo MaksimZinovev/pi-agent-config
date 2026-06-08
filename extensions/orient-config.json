@@ -1,0 +1,37 @@
+{
+  "skills": [
+    {
+      "name": "cx",
+      "path": "~/.pi/agent/skills/cx/SKILL.md"
+    },
+    {
+      "name": "ck",
+      "path": "~/.pi/agent/skills/ck/SKILL.md"
+    }
+  ],
+  "sessionStartMessage": "Orient quickly on this codebase. Step {step}/{total}: {label}. Do it now — don't summarize, just run the command and proceed.",
+  "steps": [
+    {
+      "label": "Run `cx overview .` to learn codebase orientation",
+      "systemPrompt": "[ORIENT GATE] You must run `cx overview .` before using any search tools. grep, find, rg, ack, ag, fd, and ck are BLOCKED until you complete this step. Do NOT produce a lengthy summary after cx overview — proceed to the next tool.",
+      "blockMessage": "⚠️ [Orient 1/2] Run `cx overview .` first. Search tools blocked until done.",
+      "detectCommandRegex": "\\bcx\\b.*\\boverview\\b",
+      "advanceMessage": "✅ [Orient 1/2] Complete. Now run `ck --index .` (or `ck --status` if already indexed).",
+      "retryMessage": "⚠️ [Orient 1/2] `cx overview .` returned no results. Try from the project root.",
+      "blockTools": ["grep", "find"],
+      "blockBashPatterns": ["grep", "rg", "ack", "ag", "find", "fd"],
+      "blockNativeTools": ["ck"]
+    },
+    {
+      "label": "Run `ck --index .` (or `ck --status`) to prepare semantic search",
+      "systemPrompt": "[ORIENT GATE] Run `ck --index .` (or `ck --status` if already indexed) next. grep, find, rg, ack, ag, fd are still BLOCKED. Be concise — just run the command.",
+      "blockMessage": "⚠️ [Orient 2/2] Run `ck --index .` (or `ck --status`) next. grep/find still blocked.",
+      "detectCommandRegex": "\\bck\\s+.*--(?:index|status)\\b",
+      "advanceMessage": "✅ [Orient 2/2] Complete! All tools unblocked. Use cx/ck per AGENTS.md escalation hierarchy.",
+      "retryMessage": "",
+      "blockTools": ["grep", "find"],
+      "blockBashPatterns": ["grep", "rg", "ack", "ag", "find", "fd"],
+      "blockNativeTools": []
+    }
+  ]
+}

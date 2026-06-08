@@ -9,7 +9,13 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@earendil-works/pi-coding-agent": [
+        "/Users/maksim/.local/share/fnm/node-versions/v24.0.2/installation/lib/node_modules/@earendil-works/pi-coding-agent/dist/index.d.ts"
+      ]
+    }
   },
   "include": ["extensions/*.ts"]
 }

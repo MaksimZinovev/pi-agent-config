@@ -5,47 +5,37 @@ description: Semantic code navigation for AI agents. File overviews, symbol sear
 
 # cx — Semantic Code Navigation
 
-When `cx` is available, prefer it over reading files directly.
+Always assume cx is installed. Issues → stop, inform user, wait for feedback.
 
-## Escalation hierarchy: directory overview → file overview → symbols → definition / references → read
+## Search hierarchy (indexed dir)
 
-- Explore a directory → `cx overview <dir>` (~20 tokens per entry)
-- Understand a file's structure → `cx overview <file>` (~200 tokens)
-- Find symbols across the project → `cx symbols [--kind K] [--name GLOB] [--file PATH]`
-- Read a specific function/type → `cx definition --name <name>` (~500 tokens)
-- Find all usages of a symbol → `cx references --name <name>` shows every usage with enclosing function and context
-- Check blast radius before refactoring → `cx references --name <name> --unique` shows one row per dependent function
-- Fall back to Read tool only when you need the full file or surrounding context beyond the symbol body
+**`cx`** → `ck` → `ast_grep` → `read`. Never `grep`/`find` first when cx/ck are available.
+Use relative paths from project root (e.g. `cx overview apps/cli/src/auto.ts`).
 
-## When to use cx instead of Read
+## Escalation: overview → symbols → definition → read
 
-- Exploring a new codebase — start with `cx overview .` to see top-level structure, then drill into subdirectories. Cheaper than `ls` + reading files.
-- Before reading a file — run `cx overview` first. You often don't need the full file.
-- Before editing a function — `cx definition --name X` gives you the exact text for Edit tool's `old_string` without reading the whole file.
-- Before refactoring — `cx references --name X --unique` shows which functions depend on X (one row per caller). Use without `--unique` to see every usage with context lines.
-- Understanding how a symbol is used — `cx references --name X` shows each usage site with the enclosing function and the source line, so you can see if it's called, used as a type, imported, etc.
-- Exploring a codebase — use `cx symbols` to find what you need across files, then `cx definition` to read specific symbols. Avoid reading file after file.
-- After context compression — if you previously read a file but the content was compressed out, use `cx overview` to re-orient and `cx definition` for the specific symbols you need. Don't re-read the full file.
+| Goal | Command | Cost |
+|---|---|---|
+| New codebase / explore dir | `cx overview <dir>` | ~20 tok/entry |
+| File structure | `cx overview <file>` | ~200 tok |
+| Find symbols | `cx symbols [--kind K] [--name GLOB] [--file PATH]` | varies |
+| Function/type body (use before Edit) | `cx definition --name X` | ~500 tok |
+| All usages | `cx references --name X` | varies |
+| Blast radius per caller | `cx references --name X --unique` | varies |
+
+Fall back to `read` only for full-file or context beyond symbol body.
+Before editing: `cx definition --name X` gives exact `old_string` text without reading the whole file.
+For usage patterns, see [references/usage-guide.md](references/usage-guide.md).
 
 ## Quick reference
 
 ```
-cx overview PATH                                    file or directory table of contents
-cx overview DIR --full                              directory overview with signatures; not recursive, will cover only files in DIR root
-cx overview DIR/subdir  --full                      overview of subdirectory (with signatures)
-cx symbols [--kind K] [--name GLOB] [--file PATH]   search symbols project-wide
-cx definition --name NAME [--from PATH] [--kind K]  get a function/type body
-cx references --name NAME [--file PATH] [--unique]   find all usages (--unique: one per caller)
-cx lang list                                         show supported languages
-cx lang add LANG [LANG...]                           install language grammars
+cx overview PATH                                    table of contents
+cx overview DIR --full                              with signatures (non-recursive)
+cx symbols [--kind K] [--name GLOB] [--file PATH]   search symbols
+cx definition --name NAME [--from PATH] [--kind K]  get symbol body
+cx references --name NAME [--file PATH] [--unique]  find usages
+cx lang add LANG                                    install missing grammar
 ```
 
-Short aliases: `cx o`, `cx s`, `cx d`, `cx r`
-
-Symbol kinds: fn, method, struct, enum, trait, type, const, class, interface, module, event
-
-Check signatures for `pub`/`export` to identify public API without reading the file.
-
-## Missing grammars
-
-If cx reports a missing grammar (e.g. `cx: rust grammar not installed`), install it with `cx lang add rust`. Run `cx lang list` to see what's installed.
+Aliases: `cx o`, `cx s`, `cx d`, `cx r` | Kinds: fn, method, struct, enum, trait, type, const, class, interface, module, event
