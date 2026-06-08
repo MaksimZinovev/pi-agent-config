@@ -14,7 +14,7 @@ Every plan **must** contain these sections. Omitting any is an error. Scaffold w
 | `## Files to Modify` | Explicit list: create, update, or delete |
 | `## Reuse` | Existing code, libraries, or patterns to leverage. Include partial reusable extraction suggestions |
 | `## Evidence Pack` | Claims with Source, Confidence, Implication |
-| `## Verification` | Bash code blocks with `# Test N:` labels and `# Expected:` results |
+| `## Verification` | Bash code blocks with `# Test N:` labels and `# Expected:` results. Include end-user testing |
 | `## Bottom Line` | Per-step confidence, key risk, gaps, recommendation |
 
 ## Full Format Template

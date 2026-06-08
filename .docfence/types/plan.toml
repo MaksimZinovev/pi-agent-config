@@ -100,7 +100,7 @@ has_evidence_claim = '^- \*\*Claim\*:'
 has_confidence = '\*\*Confidence\*\*:'
 
 [template_vars.sections.Verification]
-fill = "[REPLACE] Bash code blocks with # Test N: labels and # Expected: results. Prefer inline # comments where possible. Minimum 2 tests."
+fill = "[REPLACE] Bash code blocks with # Test N: labels and # Expected: results. Prefer inline # comments where possible. Include end-user testing. Minimum 2 tests."
 
 [template_vars.sections.Verification.match]
 has_verify_command = '^```bash'
