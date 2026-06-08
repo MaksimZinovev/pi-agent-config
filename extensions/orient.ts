@@ -311,7 +311,12 @@ export default function (pi: ExtensionAPI) {
 		try {
 			if (step <= TOTAL_STEPS) {
 				const stepCfg = currentStep();
-				if (!stepCfg) return;
+				if (!stepCfg) {
+					console.error(
+						"[orient] resources_discover: no step config found, skipping steer",
+					);
+					return { skillPaths: [], promptPaths: [], themePaths: [] };
+				}
 				const msg = config.sessionStartMessage
 					.replace("{step}", String(step))
 					.replace("{total}", String(TOTAL_STEPS))
@@ -322,9 +327,13 @@ export default function (pi: ExtensionAPI) {
 					"label=",
 					stepCfg.label,
 				);
+				// Fire-and-forget: don't await sendMessage — awaiting would block resources_discover
+				// until the agent turn completes, stalling session initialization.
 				pi.sendMessage(
 					{ customType: "orient-start", content: msg, display: true },
 					{ triggerTurn: true, deliverAs: "steer" },
+				).catch((e: unknown) =>
+					console.error("[orient] resources_discover sendMessage error:", e),
 				);
 			} else {
 				console.error(
@@ -335,6 +344,7 @@ export default function (pi: ExtensionAPI) {
 		} catch (e) {
 			console.error(`[orient] resources_discover error: ${e}`);
 		}
+		return { skillPaths: [], promptPaths: [], themePaths: [] };
 	});
 
 	// --- before_agent_start: inject skills + gate instruction + steer on gate steps ---

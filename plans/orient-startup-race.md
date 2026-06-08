@@ -1,10 +1,10 @@
 ---
 id: orient-startup-race
 type: plan
-status: draft
+status: done
 owner: maksim
 depends_on: []
-last_validated: ~
+last_validated: 2025-07-11
 ---
 
 # Fix orient startup race condition
